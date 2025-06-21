@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from '@/components/Auth/LoginForm';
@@ -5,7 +6,6 @@ import Header from '@/components/Layout/Header';
 import Sidebar from '@/components/Layout/Sidebar';
 import OrderManagement from '@/components/Modules/OrderManagement';
 import TesterDashboard from '@/components/Modules/TesterDashboard';
-import InspectionChartsView from '@/components/Modules/InspectionChartsView';
 
 const Index = () => {
   const { user, isLoading } = useAuth();
@@ -45,10 +45,6 @@ const Index = () => {
     
     if (activeModule === 'testing' || (activeModule === 'orders' && user.role === 'tester')) {
       return <TesterDashboard />;
-    }
-
-    if (activeModule === 'charts') {
-      return <InspectionChartsView />;
     }
 
     // Placeholder for other modules
