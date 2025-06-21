@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from '@/components/Auth/LoginForm';
 import Header from '@/components/Layout/Header';
@@ -10,6 +10,17 @@ import TesterDashboard from '@/components/Modules/TesterDashboard';
 const Index = () => {
   const { user, isLoading } = useAuth();
   const [activeModule, setActiveModule] = useState('orders');
+
+  // Move useEffect before any conditional returns to fix hook order violation
+  useEffect(() => {
+    if (user?.role === 'tester') {
+      setActiveModule('testing');
+    } else if (user?.role === 'manager') {
+      setActiveModule('dashboard');
+    } else {
+      setActiveModule('orders');
+    }
+  }, [user?.role]);
 
   if (isLoading) {
     return (
@@ -46,17 +57,6 @@ const Index = () => {
       </div>
     );
   };
-
-  // Set initial module based on user role
-  React.useEffect(() => {
-    if (user.role === 'tester') {
-      setActiveModule('testing');
-    } else if (user.role === 'manager') {
-      setActiveModule('dashboard');
-    } else {
-      setActiveModule('orders');
-    }
-  }, [user.role]);
 
   return (
     <div className="min-h-screen bg-gray-50">
