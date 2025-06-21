@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import LoginForm from '@/components/Auth/LoginForm';
@@ -45,7 +44,7 @@ const Index = () => {
     }
     
     if (activeModule === 'testing' || (activeModule === 'orders' && user.role === 'tester')) {
-      return <InspectionChartsView />;
+      return <TesterDashboard />;
     }
 
     if (activeModule === 'charts') {
