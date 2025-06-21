@@ -1,11 +1,71 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import LoginForm from '@/components/Auth/LoginForm';
+import Header from '@/components/Layout/Header';
+import Sidebar from '@/components/Layout/Sidebar';
+import OrderManagement from '@/components/Modules/OrderManagement';
+import TesterDashboard from '@/components/Modules/TesterDashboard';
 
 const Index = () => {
+  const { user, isLoading } = useAuth();
+  const [activeModule, setActiveModule] = useState('orders');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <LoginForm />;
+  }
+
+  const renderModule = () => {
+    // Set default module based on user role
+    if (activeModule === 'orders' && user.role !== 'tester') {
+      return <OrderManagement />;
+    }
+    
+    if (activeModule === 'testing' || (activeModule === 'orders' && user.role === 'tester')) {
+      return <TesterDashboard />;
+    }
+
+    // Placeholder for other modules
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h3 className="text-lg font-medium mb-2">Module đang phát triển</h3>
+          <p className="text-gray-500">Module {activeModule} sẽ sớm được hoàn thiện</p>
+        </div>
+      </div>
+    );
+  };
+
+  // Set initial module based on user role
+  React.useEffect(() => {
+    if (user.role === 'tester') {
+      setActiveModule('testing');
+    } else if (user.role === 'manager') {
+      setActiveModule('dashboard');
+    } else {
+      setActiveModule('orders');
+    }
+  }, [user.role]);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      <div className="flex">
+        <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
+        <main className="flex-1 p-6">
+          {renderModule()}
+        </main>
       </div>
     </div>
   );
