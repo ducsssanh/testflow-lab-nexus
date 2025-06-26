@@ -1,4 +1,5 @@
 
+
 import { Order, User } from '@/types/lims';
 
 // Define which fields each role can access
@@ -53,7 +54,9 @@ export const getFieldDisplayName = (fieldName: keyof Order): string => {
     createdBy: 'Tạo bởi',
     createdAt: 'Ngày tạo',
     updatedAt: 'Ngày cập nhật',
+    technicalDocuments: 'Tài liệu kỹ thuật',
   };
   
   return fieldNames[fieldName] || fieldName;
 };
+
