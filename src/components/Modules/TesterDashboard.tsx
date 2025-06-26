@@ -10,6 +10,7 @@ import { ArrowLeft, FileText, Clock } from 'lucide-react';
 import { Order, TestLog, TestCriterion, TestTemplate } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { filterOrdersByRole, canUserAccessField } from '@/utils/roleBasedAccess';
 
 const TesterDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -170,6 +171,9 @@ const TesterDashboard: React.FC = () => {
     setSelectedOrder(prev => prev ? { ...prev, status: 'awaiting-approval' } : null);
   };
 
+  // Filter orders based on user role for display
+  const filteredOrders = user ? filterOrdersByRole(orders, user.role) : orders;
+
   if (selectedOrder) {
     const assignedTests = getAssignedTests(selectedOrder);
     
@@ -186,7 +190,10 @@ const TesterDashboard: React.FC = () => {
           </Button>
           <div>
             <h2 className="text-2xl font-bold">Test Log - {selectedOrder.sampleId}</h2>
-            <p className="text-gray-600">{selectedOrder.sampleName}</p>
+            {/* Only show sample name if user has access to it */}
+            {canUserAccessField('sampleName', user?.role || 'tester') && (
+              <p className="text-gray-600">{selectedOrder.sampleName}</p>
+            )}
           </div>
         </div>
 
@@ -260,7 +267,7 @@ const TesterDashboard: React.FC = () => {
       <h2 className="text-2xl font-bold">Bảng công việc</h2>
       
       <div className="grid gap-4">
-        {orders.filter(order => ['pending', 'in-progress'].includes(order.status)).map((order) => (
+        {filteredOrders.filter(order => ['pending', 'in-progress'].includes(order.status || '')).map((order) => (
           <Card key={order.id} className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-6">
               <div className="flex justify-between items-start">
@@ -271,23 +278,30 @@ const TesterDashboard: React.FC = () => {
                       {order.status === 'pending' ? 'Chờ xử lý' : 'Đang thực hiện'}
                     </Badge>
                   </div>
-                  <p className="text-gray-600">{order.sampleName}</p>
+                  
+                  {/* Only show fields that the user has access to */}
+                  {canUserAccessField('sampleName', user?.role || 'tester') && order.sampleName && (
+                    <p className="text-gray-600">{order.sampleName}</p>
+                  )}
+                  
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
                     <div>
                       <span className="font-medium">Loại:</span> {order.sampleType}
                     </div>
+                    {canUserAccessField('dateReceived', user?.role || 'tester') && order.dateReceived && (
+                      <div>
+                        <span className="font-medium">Ngày nhận:</span> {order.dateReceived}
+                      </div>
+                    )}
                     <div>
-                      <span className="font-medium">Ngày nhận:</span> {order.dateReceived}
-                    </div>
-                    <div>
-                      <span className="font-medium">Số test:</span> {order.assignedTests.length}
+                      <span className="font-medium">Số test:</span> {order.assignedTests?.length || 0}
                     </div>
                   </div>
                   
                   <div className="pt-2">
                     <p className="text-sm text-gray-600 mb-2">Các test cần thực hiện:</p>
                     <div className="flex flex-wrap gap-2">
-                      {getAssignedTests(order).map((test) => (
+                      {order.assignedTests && getAssignedTests(order as Order).map((test) => (
                         <Badge key={test.id} variant="outline" className="text-xs">
                           {test.name}
                         </Badge>
@@ -297,7 +311,7 @@ const TesterDashboard: React.FC = () => {
                 </div>
                 
                 <Button 
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={() => setSelectedOrder(order as Order)}
                   className="ml-4"
                 >
                   <Clock className="h-4 w-4 mr-2" />
@@ -309,7 +323,7 @@ const TesterDashboard: React.FC = () => {
         ))}
       </div>
 
-      {orders.filter(order => ['pending', 'in-progress'].includes(order.status)).length === 0 && (
+      {filteredOrders.filter(order => ['pending', 'in-progress'].includes(order.status || '')).length === 0 && (
         <Card>
           <CardContent className="p-8 text-center">
             <p className="text-gray-500 text-lg">Không có mẫu nào cần kiểm định</p>
