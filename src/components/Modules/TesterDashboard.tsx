@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,6 +10,7 @@ import { Order, TestLog, TestCriterion, TestTemplate } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { filterOrdersByRole, canUserAccessField } from '@/utils/roleBasedAccess';
+import TechnicalDocuments from './TechnicalDocuments';
 
 const TesterDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -38,6 +38,17 @@ const TesterDashboard: React.FC = () => {
       createdBy: 'reception1',
       createdAt: '2024-01-15T09:00:00Z',
       updatedAt: '2024-01-15T09:00:00Z',
+      technicalDocuments: [
+        {
+          id: '1',
+          name: 'Technical_Specification.pdf',
+          type: 'pdf',
+          size: 1024000,
+          uploadedAt: '2024-01-15T08:00:00Z',
+          uploadedBy: 'reception1',
+          url: 'uploads/tech-spec.pdf'
+        }
+      ],
     },
     {
       id: '2',
@@ -53,6 +64,7 @@ const TesterDashboard: React.FC = () => {
       createdBy: 'reception1',
       createdAt: '2024-01-16T10:00:00Z',
       updatedAt: '2024-01-16T10:00:00Z',
+      technicalDocuments: [],
     },
   ];
 
@@ -197,6 +209,15 @@ const TesterDashboard: React.FC = () => {
           </div>
         </div>
 
+        {/* Technical Documents Section */}
+        {selectedOrder.technicalDocuments && selectedOrder.technicalDocuments.length > 0 && (
+          <TechnicalDocuments
+            documents={selectedOrder.technicalDocuments}
+            onDocumentsChange={() => {}} // Read-only for testers
+            canUpload={false}
+          />
+        )}
+
         <Card>
           <CardHeader>
             <CardTitle>Thực hiện kiểm định</CardTitle>
@@ -308,6 +329,15 @@ const TesterDashboard: React.FC = () => {
                       ))}
                     </div>
                   </div>
+
+                  {/* Show technical documents indicator */}
+                  {order.technicalDocuments && order.technicalDocuments.length > 0 && (
+                    <div className="pt-2">
+                      <p className="text-sm text-blue-600">
+                        📄 {order.technicalDocuments.length} tài liệu kỹ thuật có sẵn
+                      </p>
+                    </div>
+                  )}
                 </div>
                 
                 <Button 

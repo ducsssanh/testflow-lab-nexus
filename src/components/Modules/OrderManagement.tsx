@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,9 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Edit } from 'lucide-react';
-import { Order, TestTemplate, TestCriterion } from '@/types/lims';
+import { Order, TestTemplate, TestCriterion, TechnicalDocument } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import TechnicalDocuments from './TechnicalDocuments';
 
 const OrderManagement: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -24,6 +24,7 @@ const OrderManagement: React.FC = () => {
     quantity: 1,
     notes: '',
     assignedTests: [] as string[],
+    technicalDocuments: [] as TechnicalDocument[],
   });
   
   const { user } = useAuth();
@@ -66,6 +67,7 @@ const OrderManagement: React.FC = () => {
       createdBy: 'reception1',
       createdAt: '2024-01-15T09:00:00Z',
       updatedAt: '2024-01-15T09:00:00Z',
+      technicalDocuments: [],
     },
   ];
 
@@ -117,6 +119,7 @@ const OrderManagement: React.FC = () => {
       createdBy: user?.id || '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      technicalDocuments: newOrder.technicalDocuments,
     };
 
     // API_INTEGRATION: Call POST /api/v1/orders with body: Order
@@ -131,6 +134,7 @@ const OrderManagement: React.FC = () => {
       quantity: 1,
       notes: '',
       assignedTests: [],
+      technicalDocuments: [],
     });
 
     toast({
@@ -265,6 +269,17 @@ const OrderManagement: React.FC = () => {
                 </div>
               )}
 
+              {/* Technical Documents Upload Section */}
+              <div className="space-y-4">
+                <TechnicalDocuments
+                  documents={newOrder.technicalDocuments}
+                  onDocumentsChange={(documents) => 
+                    setNewOrder(prev => ({ ...prev, technicalDocuments: documents }))
+                  }
+                  canUpload={true}
+                />
+              </div>
+
               <div className="flex justify-end space-x-2 pt-4">
                 <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
                   Hủy
@@ -331,6 +346,11 @@ const OrderManagement: React.FC = () => {
                   </div>
                   {order.notes && (
                     <p className="text-sm text-gray-600 italic">Ghi chú: {order.notes}</p>
+                  )}
+                  {order.technicalDocuments && order.technicalDocuments.length > 0 && (
+                    <p className="text-sm text-gray-500">
+                      <span className="font-medium">Tài liệu:</span> {order.technicalDocuments.length} file
+                    </p>
                   )}
                 </div>
                 <Button variant="outline" size="sm">

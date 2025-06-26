@@ -1,4 +1,3 @@
-
 // Type definitions for the LIMS system
 export interface User {
   id: string;
@@ -25,6 +24,17 @@ export interface Order {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  technicalDocuments?: TechnicalDocument[]; // New field for uploaded documents
+}
+
+export interface TechnicalDocument {
+  id: string;
+  name: string;
+  type: string; // 'pdf' | 'doc' | 'docx'
+  size: number;
+  uploadedAt: string;
+  uploadedBy: string;
+  url: string; // File URL or path
 }
 
 export interface TestTemplate {
