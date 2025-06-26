@@ -1,12 +1,12 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Order, TestCriterion, TestTemplate } from '@/types/lims';
+import { Order, TestCriterion, TestTemplate, User } from '@/types/lims';
 import OrderCard from './OrderCard';
 
 interface OrderListProps {
   orders: Partial<Order>[];
-  userRole: string;
+  userRole: User['role'];
   testTemplates: TestTemplate[];
   onSelectOrder: (order: Order) => void;
 }

@@ -4,12 +4,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
-import { Order, TestCriterion } from '@/types/lims';
+import { Order, TestCriterion, User } from '@/types/lims';
 import { canUserAccessField } from '@/utils/roleBasedAccess';
 
 interface OrderCardProps {
   order: Order;
-  userRole: string;
+  userRole: User['role'];
   assignedTests: TestCriterion[];
   onSelect: (order: Order) => void;
 }
