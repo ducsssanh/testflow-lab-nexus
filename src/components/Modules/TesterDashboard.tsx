@@ -10,6 +10,7 @@ import DocumentViewer from './DocumentViewer';
 import OrderList from './TesterDashboard/OrderList';
 import TestResultsForm from './TesterDashboard/TestResultsForm';
 import TechnicalDocumentsSection from './TesterDashboard/TechnicalDocumentsSection';
+import ManualParameterEntry from './TesterDashboard/ManualParameterEntry';
 
 const TesterDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -202,6 +203,14 @@ const TesterDashboard: React.FC = () => {
     setSelectedOrder(prev => prev ? { ...prev, status: 'awaiting-approval' } : null);
   };
 
+  const handleSaveManualParameters = (parameters: any) => {
+    console.log('Manual parameters saved:', parameters);
+    toast({
+      title: "Đã lưu thông số",
+      description: "Thông số kiểm định thủ công đã được lưu thành công",
+    });
+  };
+
   // Filter orders based on user role for display
   const filteredOrders = user ? filterOrdersByRole(orders, user.role) : orders;
 
@@ -245,6 +254,11 @@ const TesterDashboard: React.FC = () => {
             console.log('Viewing document:', document);
             setViewingDocument(document);
           }}
+        />
+
+        <ManualParameterEntry
+          selectedOrder={selectedOrder}
+          onSaveParameters={handleSaveManualParameters}
         />
 
         <Card>
