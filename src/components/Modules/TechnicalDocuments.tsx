@@ -85,6 +85,12 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
     }
   };
 
+  const handleUploadClick = (e: React.MouseEvent) => {
+    e.preventDefault(); // Prevent form submission
+    e.stopPropagation(); // Stop event bubbling
+    fileInputRef.current?.click();
+  };
+
   const getFileIcon = (type: string) => {
     return <FileText className="h-4 w-4" />;
   };
@@ -138,7 +144,8 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
                 className="hidden"
               />
               <Button
-                onClick={() => fileInputRef.current?.click()}
+                type="button"
+                onClick={handleUploadClick}
                 size="sm"
                 className="flex items-center space-x-2"
               >
@@ -177,6 +184,7 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
                 </div>
                 <div className="flex items-center space-x-2">
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => handleViewDocument(document)}
@@ -184,6 +192,7 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
                     <Eye className="h-4 w-4" />
                   </Button>
                   <Button
+                    type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => handleDownloadDocument(document)}

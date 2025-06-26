@@ -52,6 +52,17 @@ const OrderManagement: React.FC = () => {
     },
   ];
 
+  // Create a mock PDF document for testing
+  const createMockPDFDocument = (): TechnicalDocument => ({
+    id: 'mock-pdf-' + Date.now(),
+    name: 'Sample_Technical_Specification.pdf',
+    type: 'pdf',
+    size: 2048000, // 2MB
+    uploadedAt: new Date().toISOString(),
+    uploadedBy: user?.id || 'system',
+    url: 'uploads/mock-sample-tech-spec.pdf',
+  });
+
   const mockOrders: Order[] = [
     {
       id: '1',
@@ -67,7 +78,7 @@ const OrderManagement: React.FC = () => {
       createdBy: 'reception1',
       createdAt: '2024-01-15T09:00:00Z',
       updatedAt: '2024-01-15T09:00:00Z',
-      technicalDocuments: [],
+      technicalDocuments: [createMockPDFDocument()], // Add mock PDF for testing
     },
   ];
 
