@@ -16,7 +16,18 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
   onViewDocument,
 }) => {
   if (!documents || documents.length === 0) {
-    return null;
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Tài liệu kỹ thuật</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-500 text-center py-4">
+            Không có tài liệu kỹ thuật nào
+          </p>
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
@@ -50,7 +61,7 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onViewDocument(document)}
-                className="flex items-center space-x-2"
+                className="flex items-center space-x-2 ml-4"
               >
                 <Eye className="h-4 w-4" />
                 <span>Xem</span>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -48,6 +47,15 @@ const TesterDashboard: React.FC = () => {
           uploadedAt: '2024-01-15T08:00:00Z',
           uploadedBy: 'reception1',
           url: 'uploads/tech-spec.pdf'
+        },
+        {
+          id: '2',
+          name: 'User_Manual.pdf',
+          type: 'pdf',
+          size: 2048000,
+          uploadedAt: '2024-01-15T08:30:00Z',
+          uploadedBy: 'reception1',
+          url: 'uploads/user-manual.pdf'
         }
       ],
     },
@@ -65,7 +73,17 @@ const TesterDashboard: React.FC = () => {
       createdBy: 'reception1',
       createdAt: '2024-01-16T10:00:00Z',
       updatedAt: '2024-01-16T10:00:00Z',
-      technicalDocuments: [],
+      technicalDocuments: [
+        {
+          id: '3',
+          name: 'Battery_Datasheet.pdf',
+          type: 'pdf',
+          size: 512000,
+          uploadedAt: '2024-01-16T09:00:00Z',
+          uploadedBy: 'reception1',
+          url: 'uploads/battery-datasheet.pdf'
+        }
+      ],
     },
   ];
 
@@ -220,10 +238,13 @@ const TesterDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Technical Documents Section */}
+        {/* Technical Documents Section - Always show, even if empty */}
         <TechnicalDocumentsSection
           documents={selectedOrder.technicalDocuments || []}
-          onViewDocument={setViewingDocument}
+          onViewDocument={(document) => {
+            console.log('Viewing document:', document);
+            setViewingDocument(document);
+          }}
         />
 
         <Card>
