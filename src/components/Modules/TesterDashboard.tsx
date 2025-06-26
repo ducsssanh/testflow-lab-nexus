@@ -5,12 +5,13 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, FileText, Clock } from 'lucide-react';
-import { Order, TestLog, TestCriterion, TestTemplate } from '@/types/lims';
+import { ArrowLeft, FileText, Clock, Eye } from 'lucide-react';
+import { Order, TestLog, TestCriterion, TestTemplate, TechnicalDocument } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { filterOrdersByRole, canUserAccessField } from '@/utils/roleBasedAccess';
 import TechnicalDocuments from './TechnicalDocuments';
+import DocumentViewer from './DocumentViewer';
 
 const TesterDashboard: React.FC = () => {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -18,6 +19,7 @@ const TesterDashboard: React.FC = () => {
   const [testLogs, setTestLogs] = useState<TestLog[]>([]);
   const [testTemplates, setTestTemplates] = useState<TestTemplate[]>([]);
   const [testResults, setTestResults] = useState<Record<string, string>>({});
+  const [viewingDocument, setViewingDocument] = useState<TechnicalDocument | null>(null);
   
   const { user } = useAuth();
   const { toast } = useToast();
@@ -186,6 +188,16 @@ const TesterDashboard: React.FC = () => {
   // Filter orders based on user role for display
   const filteredOrders = user ? filterOrdersByRole(orders, user.role) : orders;
 
+  // If viewing a document, show the DocumentViewer
+  if (viewingDocument) {
+    return (
+      <DocumentViewer
+        document={viewingDocument}
+        onBack={() => setViewingDocument(null)}
+      />
+    );
+  }
+
   if (selectedOrder) {
     const assignedTests = getAssignedTests(selectedOrder);
     
@@ -209,13 +221,48 @@ const TesterDashboard: React.FC = () => {
           </div>
         </div>
 
-        {/* Technical Documents Section */}
+        {/* Technical Documents Section - Updated to include view button */}
         {selectedOrder.technicalDocuments && selectedOrder.technicalDocuments.length > 0 && (
-          <TechnicalDocuments
-            documents={selectedOrder.technicalDocuments}
-            onDocumentsChange={() => {}} // Read-only for testers
-            canUpload={false}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Tài liệu kỹ thuật</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {selectedOrder.technicalDocuments.map((document) => (
+                  <div
+                    key={document.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <FileText className="h-4 w-4" />
+                      <div>
+                        <p className="font-medium text-sm">{document.name}</p>
+                        <div className="flex items-center space-x-2 text-xs text-gray-500">
+                          <Badge variant="outline" className="text-xs">
+                            {document.type.toUpperCase()}
+                          </Badge>
+                          <span>{(document.size / 1024 / 1024).toFixed(2)} MB</span>
+                          <span>•</span>
+                          <span>{new Date(document.uploadedAt).toLocaleDateString('vi-VN')}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setViewingDocument(document)}
+                      className="flex items-center space-x-2"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>Xem</span>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         )}
 
         <Card>
