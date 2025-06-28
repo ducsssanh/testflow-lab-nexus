@@ -6,6 +6,7 @@ import Header from '@/components/Layout/Header';
 import Sidebar from '@/components/Layout/Sidebar';
 import OrderManagement from '@/components/Modules/OrderManagement';
 import TesterDashboard from '@/components/Modules/TesterDashboard';
+import { SidebarProvider } from '@/components/ui/sidebar';
 
 const Index = () => {
   const { user, isLoading } = useAuth();
@@ -59,15 +60,17 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
-      <div className="flex">
-        <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
-        <main className="flex-1 p-6">
-          {renderModule()}
-        </main>
+    <SidebarProvider>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        <Header />
+        <div className="flex flex-1">
+          <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
+          <main className="flex-1 p-6">
+            {renderModule()}
+          </main>
+        </div>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 

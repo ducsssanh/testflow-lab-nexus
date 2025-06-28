@@ -1,49 +1,38 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
 import { LogOut, User } from 'lucide-react';
+import { SidebarTrigger } from '@/components/ui/sidebar';
 
-const Header: React.FC = () => {
+const Header = () => {
   const { user, logout } = useAuth();
 
-  const getRoleDisplay = (role: string) => {
-    switch (role) {
-      case 'reception': return 'Tiếp nhận';
-      case 'tester': return 'Kiểm định viên';
-      case 'manager': return 'Quản lý';
-      default: return role;
-    }
-  };
-
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
-          <h1 className="text-2xl font-bold text-blue-900">LIMS</h1>
-          <span className="text-gray-500">Laboratory Information Management System</span>
+    <header className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between fixed top-0 left-0 right-0 z-50">
+      <div className="flex items-center space-x-4">
+        <SidebarTrigger />
+        <h1 className="text-xl font-semibold text-gray-900">
+          Hệ thống Quản lý Phòng thí nghiệm
+        </h1>
+      </div>
+      
+      <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-2">
+          <User className="h-5 w-5 text-gray-500" />
+          <span className="text-gray-700">{user?.name}</span>
+          <span className="text-sm text-gray-500">({user?.role})</span>
         </div>
         
-        {user && (
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <User className="h-4 w-4 text-gray-500" />
-              <div className="text-sm">
-                <div className="font-medium">{user.fullName}</div>
-                <div className="text-gray-500">{getRoleDisplay(user.role)}</div>
-              </div>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={logout}
-              className="flex items-center space-x-2"
-            >
-              <LogOut className="h-4 w-4" />
-              <span>Đăng xuất</span>
-            </Button>
-          </div>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={logout}
+          className="flex items-center space-x-2"
+        >
+          <LogOut className="h-4 w-4" />
+          <span>Đăng xuất</span>
+        </Button>
       </div>
     </header>
   );
