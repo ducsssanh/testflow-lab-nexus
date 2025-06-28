@@ -1,3 +1,4 @@
+
 // Type definitions for the LIMS system
 export interface User {
   id: string;
@@ -6,6 +7,70 @@ export interface User {
   role: 'reception' | 'tester' | 'manager';
   email: string;
   isActive: boolean;
+  teams?: string[]; // Teams the user belongs to
+}
+
+export interface Assignment {
+  id: string;
+  sampleCode: string; // Unique identifier for test sample
+  sampleType: 'Lithium Battery' | 'ITAV Adapter' | 'ITAV Desktop' | 'ITAV Laptop+Tablet' | 'ITAV TV';
+  sampleSubType?: 'Cell' | 'Pack' | 'Cell+Pack'; // For batteries
+  sampleQuantity: number;
+  testingRequirements: string[]; // e.g., ['QCVN101:2020+IEC', 'QCVN101:2020']
+  receivedTime: string;
+  technicalDocumentation?: TechnicalDocument[];
+  status: 'Pending' | 'In Progress' | 'Done';
+  assignedTeam: string;
+  assignedBy: string; // Lab Manager ID
+  testSample: string; // Model name
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface TestingCriterion {
+  id: string;
+  name: string;
+  parentId?: string; // For hierarchical criteria
+  unit?: string;
+  attempts: TestingAttempt[];
+  result: 'Pass' | 'Fail' | 'N/A' | null;
+  children?: TestingCriterion[];
+}
+
+export interface TestingAttempt {
+  id: string;
+  value: string;
+  result: 'Pass' | 'Fail' | 'N/A';
+  timestamp: string;
+  testerId: string;
+}
+
+export interface InspectionLog {
+  id: string;
+  assignmentId: string;
+  sampleSymbol: string;
+  testingStandards: string[];
+  testSample: string;
+  testingDate: string;
+  sampleInfo: Record<string, any>; // Dynamic based on sample type
+  testingCriteria: TestingCriterion[];
+  status: 'Draft' | 'Completed';
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReportTemplate {
+  id: string;
+  sampleType: string;
+  testingRequirements: string[];
+  sections: ReportSection[];
+}
+
+export interface ReportSection {
+  id: string;
+  name: string;
+  criteria: TestingCriterion[];
 }
 
 export interface Order {
