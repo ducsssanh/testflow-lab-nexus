@@ -27,14 +27,23 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   const { toast } = useToast();
 
   useEffect(() => {
-    // API_INTEGRATION: GET /api/v1/templates?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}
+    // TODO: REPLACE WITH REAL API CALLS
+    // API_INTEGRATION: Replace mock template loading with actual API calls
     loadTemplateData();
     
-    // API_INTEGRATION: GET /api/v1/inspection-logs?assignmentId=${assignment.id}
+    // API_INTEGRATION: Replace mock log loading with actual API call
     loadExistingLog();
   }, [assignment]);
 
   const loadTemplateData = async () => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual template loading
+    // GET /api/v1/templates?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}
+    // const response = await fetch(`/api/v1/templates?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
+    // const template = await response.json();
+    // setReportTemplate(template);
+    // setTestingCriteria(template.sections.flatMap(s => s.criteria));
+
     // Mock template data based on sample type and requirements
     const mockTemplate: ReportTemplate = {
       id: '1',
@@ -87,7 +96,19 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   };
 
   const loadExistingLog = async () => {
-    // API_INTEGRATION: Check for existing inspection log
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual inspection log loading
+    // GET /api/v1/inspection-logs?assignmentId=${assignment.id}
+    // const response = await fetch(`/api/v1/inspection-logs?assignmentId=${assignment.id}`);
+    // if (response.ok) {
+    //   const existingLog = await response.json();
+    //   setInspectionLog(existingLog);
+    // } else {
+    //   // Create new log if none exists
+    //   const newLog = { ... };
+    //   setInspectionLog(newLog);
+    // }
+
     // For now, create a new one if none exists
     if (!inspectionLog) {
       const newLog: InspectionLog = {
@@ -109,7 +130,13 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   };
 
   const handleUpdateCriteria = async () => {
-    // API_INTEGRATION: GET /api/v1/templates/additional-criteria
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual criteria update endpoint
+    // GET /api/v1/templates/additional-criteria?sampleType=${assignment.sampleType}
+    // const response = await fetch(`/api/v1/templates/additional-criteria?sampleType=${assignment.sampleType}`);
+    // const additionalCriteria = await response.json();
+    // setTestingCriteria(prev => [...prev, ...additionalCriteria]);
+
     toast({
       title: "Update Function",
       description: "Additional testing criteria can be added per customer requests",
@@ -125,7 +152,23 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
       updatedAt: new Date().toISOString(),
     };
 
-    // API_INTEGRATION: POST/PUT /api/v1/inspection-logs
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual save inspection log endpoint
+    // POST/PUT /api/v1/inspection-logs
+    // try {
+    //   const response = await fetch('/api/v1/inspection-logs', {
+    //     method: inspectionLog.id ? 'PUT' : 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify(updatedLog)
+    //   });
+    //   const savedLog = await response.json();
+    //   setInspectionLog(savedLog);
+    // } catch (error) {
+    //   console.error('Failed to save inspection log:', error);
+    //   toast({ title: "Error", description: "Failed to save inspection data" });
+    //   return;
+    // }
+
     setInspectionLog(updatedLog);
 
     // Update assignment status if not already in progress
@@ -147,7 +190,27 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   const handleGenerateReport = async () => {
     if (!inspectionLog) return;
 
-    // API_INTEGRATION: POST /api/v1/reports/generate
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual report generation endpoint
+    // POST /api/v1/reports/generate
+    // try {
+    //   const response = await fetch('/api/v1/reports/generate', {
+    //     method: 'POST',
+    //     headers: { 'Content-Type': 'application/json' },
+    //     body: JSON.stringify({
+    //       assignmentId: assignment.id,
+    //       inspectionLogId: inspectionLog.id,
+    //       templateId: reportTemplate?.id
+    //     })
+    //   });
+    //   const report = await response.json();
+    //   console.log('Generated report:', report);
+    // } catch (error) {
+    //   console.error('Failed to generate report:', error);
+    //   toast({ title: "Error", description: "Failed to generate report" });
+    //   return;
+    // }
+
     const updatedAssignment: Assignment = {
       ...assignment,
       status: 'Done',

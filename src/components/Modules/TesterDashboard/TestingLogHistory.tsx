@@ -14,7 +14,20 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
   const [logs, setLogs] = useState<InspectionLog[]>([]);
 
   useEffect(() => {
-    // API_INTEGRATION: GET /api/v1/inspection-logs?testerId=current-user
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace mock data with actual API call
+    // GET /api/v1/inspection-logs?testerId=current-user&status=completed
+    // const fetchTestingHistory = async () => {
+    //   try {
+    //     const response = await fetch('/api/v1/inspection-logs?testerId=current-user');
+    //     const logs = await response.json();
+    //     setLogs(logs);
+    //   } catch (error) {
+    //     console.error('Failed to fetch testing history:', error);
+    //   }
+    // };
+    // fetchTestingHistory();
+
     const mockLogs: InspectionLog[] = [
       {
         id: '1',
@@ -47,6 +60,16 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
     ];
     setLogs(mockLogs);
   }, []);
+
+  const handleViewDetails = async (logId: string) => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual log detail viewing
+    // This could navigate to a detailed view or open a modal
+    // const response = await fetch(`/api/v1/inspection-logs/${logId}/details`);
+    // const logDetails = await response.json();
+    // Navigate to detail view or open modal with logDetails
+    console.log('View log details for:', logId);
+  };
 
   return (
     <div className="space-y-6">
@@ -100,7 +123,11 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
                   </div>
                 </div>
                 
-                <Button variant="outline" className="ml-4">
+                <Button 
+                  variant="outline" 
+                  className="ml-4"
+                  onClick={() => handleViewDetails(log.id)}
+                >
                   <FileText className="h-4 w-4 mr-2" />
                   View Details
                 </Button>

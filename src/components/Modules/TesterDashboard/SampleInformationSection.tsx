@@ -17,6 +17,21 @@ const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
   onUpdate,
 }) => {
   const updateField = (field: string, value: any) => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual sample info update endpoint
+    // PUT /api/v1/inspection-logs/${inspectionLogId}/sample-info
+    // const updateSampleInfo = async (field, value) => {
+    //   try {
+    //     await fetch(`/api/v1/inspection-logs/${inspectionLogId}/sample-info`, {
+    //       method: 'PUT',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify({ [field]: value })
+    //     });
+    //   } catch (error) {
+    //     console.error('Failed to update sample info:', error);
+    //   }
+    // };
+
     onUpdate({ ...sampleInfo, [field]: value });
   };
 
@@ -135,6 +150,9 @@ const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
         <p className="text-sm text-gray-600">
           Sample Type: {assignment.sampleType}
           {assignment.sampleSubType && ` (${assignment.sampleSubType})`}
+        </p>
+        <p className="text-xs text-blue-600 mt-2">
+          💡 API Integration: All sample information changes will be automatically saved to the database when connected to backend
         </p>
       </CardHeader>
       <CardContent>

@@ -17,7 +17,10 @@ const TesterDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Mock data for assignments
+  // TODO: REPLACE WITH REAL API CALL
+  // API_INTEGRATION: Replace this mock data with actual API call
+  // GET /api/v1/assignments?testerId=${userId}&teams=${userTeams}
+  // This should fetch assignments assigned to the current user's teams
   const mockAssignments: Assignment[] = [
     {
       id: '1',
@@ -87,8 +90,21 @@ const TesterDashboard: React.FC = () => {
   ];
 
   useEffect(() => {
-    // API_INTEGRATION: GET /api/v1/assignments?teams=${user.teams.join(',')}
-    // Filter assignments by user's teams
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace mock data with actual API call
+    // const fetchAssignments = async () => {
+    //   try {
+    //     const response = await fetch(`/api/v1/assignments?teams=${user.teams.join(',')}`);
+    //     const assignments = await response.json();
+    //     setAssignments(assignments);
+    //   } catch (error) {
+    //     console.error('Failed to fetch assignments:', error);
+    //     toast({ title: "Error", description: "Failed to load assignments" });
+    //   }
+    // };
+    // fetchAssignments();
+
+    // Filter assignments by user's teams (this logic will move to backend)
     const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team']; // Mock user teams
     const filteredAssignments = mockAssignments.filter(assignment => 
       userTeams.includes(assignment.assignedTeam)
@@ -102,6 +118,21 @@ const TesterDashboard: React.FC = () => {
   };
 
   const handleUpdateAssignment = (updatedAssignment: Assignment) => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual API call to update assignment
+    // PUT /api/v1/assignments/${assignmentId}
+    // const updateAssignment = async (assignment) => {
+    //   try {
+    //     await fetch(`/api/v1/assignments/${assignment.id}`, {
+    //       method: 'PUT',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify(assignment)
+    //     });
+    //   } catch (error) {
+    //     console.error('Failed to update assignment:', error);
+    //   }
+    // };
+
     setAssignments(prev => prev.map(a => 
       a.id === updatedAssignment.id ? updatedAssignment : a
     ));

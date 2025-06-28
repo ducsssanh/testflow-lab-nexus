@@ -50,6 +50,21 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
   };
 
   const updateAttempt = (criterionId: string, attemptIndex: number, field: keyof TestingAttempt, value: any) => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual attempt update endpoint
+    // PUT /api/v1/testing-criteria/${criterionId}/attempts/${attemptIndex}
+    // const updateAttemptAPI = async (criterionId, attemptIndex, field, value) => {
+    //   try {
+    //     await fetch(`/api/v1/testing-criteria/${criterionId}/attempts/${attemptIndex}`, {
+    //       method: 'PUT',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify({ [field]: value })
+    //     });
+    //   } catch (error) {
+    //     console.error('Failed to update attempt:', error);
+    //   }
+    // };
+
     const updateCriterion = (c: TestingCriterion): TestingCriterion => {
       if (c.id === criterionId) {
         const updatedAttempts = [...c.attempts];
@@ -200,6 +215,12 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                   <Input 
                     className="mt-1 h-8" 
                     placeholder="Enter testing time"
+                    onChange={(e) => {
+                      // TODO: REPLACE WITH REAL API CALL
+                      // API_INTEGRATION: Save testing time to database
+                      // PUT /api/v1/testing-criteria/${criterion.id}/metadata
+                      console.log('Testing time updated:', e.target.value);
+                    }}
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
@@ -208,6 +229,11 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                     <Input 
                       className="mt-1 h-8" 
                       placeholder="Tester name"
+                      onChange={(e) => {
+                        // TODO: REPLACE WITH REAL API CALL
+                        // API_INTEGRATION: Save tester info to database
+                        console.log('Tester updated:', e.target.value);
+                      }}
                     />
                   </div>
                   <div>
@@ -216,6 +242,11 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                       className="mt-1 h-8" 
                       placeholder="Equipment ID"
                       defaultValue="PSI.TB-"
+                      onChange={(e) => {
+                        // TODO: REPLACE WITH REAL API CALL
+                        // API_INTEGRATION: Save equipment info to database
+                        console.log('Equipment updated:', e.target.value);
+                      }}
                     />
                   </div>
                 </div>
