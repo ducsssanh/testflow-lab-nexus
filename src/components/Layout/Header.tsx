@@ -1,10 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, Menu } from 'lucide-react';
 
-const Header: React.FC = () => {
+interface HeaderProps {
+  onToggleSidebar?: () => void;
+}
+
+const Header: React.FC<HeaderProps> = ({ onToggleSidebar }) => {
   const { user, logout } = useAuth();
 
   const getRoleDisplay = (role: string) => {
@@ -20,6 +24,16 @@ const Header: React.FC = () => {
     <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-4">
+          {onToggleSidebar && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onToggleSidebar}
+              className="flex items-center"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
           <h1 className="text-2xl font-bold text-blue-900">LIMS</h1>
           <span className="text-gray-500">Laboratory Information Management System</span>
         </div>

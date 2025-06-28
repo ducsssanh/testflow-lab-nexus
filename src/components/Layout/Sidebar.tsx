@@ -15,9 +15,10 @@ import {
 interface SidebarProps {
   activeModule: string;
   onModuleChange: (module: string) => void;
+  isCollapsed?: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }) => {
+const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange, isCollapsed = false }) => {
   const { user } = useAuth();
 
   const getMenuItems = () => {
@@ -54,21 +55,26 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }) => {
   const menuItems = getMenuItems();
 
   return (
-    <div className="w-64 bg-gray-50 border-r border-gray-200 h-full">
+    <div className={cn(
+      "bg-gray-50 border-r border-gray-200 h-full transition-all duration-300",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
       <nav className="p-4 space-y-2">
         {menuItems.map((item) => (
           <button
             key={item.id}
             onClick={() => onModuleChange(item.id)}
             className={cn(
-              "w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors",
+              "w-full flex items-center text-left rounded-lg transition-colors",
+              isCollapsed ? "justify-center p-3" : "space-x-3 px-4 py-3",
               activeModule === item.id
                 ? "bg-blue-100 text-blue-900 font-medium"
                 : "text-gray-700 hover:bg-gray-100"
             )}
+            title={isCollapsed ? item.label : undefined}
           >
-            <item.icon className="h-5 w-5" />
-            <span>{item.label}</span>
+            <item.icon className="h-5 w-5 flex-shrink-0" />
+            {!isCollapsed && <span>{item.label}</span>}
           </button>
         ))}
       </nav>

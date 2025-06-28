@@ -10,6 +10,7 @@ import TesterDashboard from '@/components/Modules/TesterDashboard';
 const Index = () => {
   const { user, isLoading } = useAuth();
   const [activeModule, setActiveModule] = useState('orders');
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Move useEffect before any conditional returns to fix hook order violation
   useEffect(() => {
@@ -21,6 +22,10 @@ const Index = () => {
       setActiveModule('orders');
     }
   }, [user?.role]);
+
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
 
   if (isLoading) {
     return (
@@ -60,9 +65,13 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header onToggleSidebar={toggleSidebar} />
       <div className="flex">
-        <Sidebar activeModule={activeModule} onModuleChange={setActiveModule} />
+        <Sidebar 
+          activeModule={activeModule} 
+          onModuleChange={setActiveModule}
+          isCollapsed={sidebarCollapsed}
+        />
         <main className="flex-1 p-6">
           {renderModule()}
         </main>
