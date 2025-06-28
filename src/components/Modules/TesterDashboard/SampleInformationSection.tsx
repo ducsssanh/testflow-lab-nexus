@@ -151,9 +151,6 @@ const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
           Sample Type: {assignment.sampleType}
           {assignment.sampleSubType && ` (${assignment.sampleSubType})`}
         </p>
-        <p className="text-xs text-blue-600 mt-2">
-          💡 API Integration: All sample information changes will be automatically saved to the database when connected to backend
-        </p>
       </CardHeader>
       <CardContent>
         {assignment.sampleType === 'Lithium Battery' 

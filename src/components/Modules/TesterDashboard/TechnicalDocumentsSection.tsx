@@ -45,9 +45,6 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
           <p className="text-gray-500 text-center py-4">
             Không có tài liệu kỹ thuật nào
           </p>
-          <p className="text-xs text-blue-600 text-center">
-            💡 API Integration: Technical documents will be loaded from database when backend is connected
-          </p>
         </CardContent>
       </Card>
     );
@@ -57,9 +54,6 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
     <Card>
       <CardHeader>
         <CardTitle>Tài liệu kỹ thuật</CardTitle>
-        <p className="text-xs text-blue-600">
-          💡 API Integration: Document viewing will use signed URLs from backend storage (e.g., AWS S3, Supabase Storage)
-        </p>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
