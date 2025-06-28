@@ -11,19 +11,6 @@ import {
   Calendar,
   Archive
 } from 'lucide-react';
-import {
-  Sidebar as SidebarContainer,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
-  useSidebar,
-} from '@/components/ui/sidebar';
 
 interface SidebarProps {
   activeModule: string;
@@ -32,7 +19,6 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }) => {
   const { user } = useAuth();
-  const { state } = useSidebar();
 
   const getMenuItems = () => {
     const baseItems = [];
@@ -68,52 +54,25 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange }) => {
   const menuItems = getMenuItems();
 
   return (
-    <SidebarContainer className="border-r border-gray-200">
-      <SidebarHeader className="border-b border-gray-200 p-4">
-        <div className="flex items-center justify-between">
-          <h2 className={cn(
-            "font-semibold text-gray-900",
-            state === "collapsed" && "hidden"
-          )}>
-            Menu
-          </h2>
-          <SidebarTrigger />
-        </div>
-      </SidebarHeader>
-      
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className={cn(
-            state === "collapsed" && "hidden"
-          )}>
-            Navigation
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.id}>
-                  <SidebarMenuButton
-                    onClick={() => onModuleChange(item.id)}
-                    isActive={activeModule === item.id}
-                    className={cn(
-                      "w-full justify-start",
-                      activeModule === item.id && "bg-blue-100 text-blue-900"
-                    )}
-                  >
-                    <item.icon className="h-5 w-5" />
-                    <span className={cn(
-                      state === "collapsed" && "hidden"
-                    )}>
-                      {item.label}
-                    </span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-    </SidebarContainer>
+    <div className="w-64 bg-gray-50 border-r border-gray-200 h-full">
+      <nav className="p-4 space-y-2">
+        {menuItems.map((item) => (
+          <button
+            key={item.id}
+            onClick={() => onModuleChange(item.id)}
+            className={cn(
+              "w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors",
+              activeModule === item.id
+                ? "bg-blue-100 text-blue-900 font-medium"
+                : "text-gray-700 hover:bg-gray-100"
+            )}
+          >
+            <item.icon className="h-5 w-5" />
+            <span>{item.label}</span>
+          </button>
+        ))}
+      </nav>
+    </div>
   );
 };
 
