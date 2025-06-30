@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Assignment, TestingStandardSection, TestingCriterion, TableData, TableRowData } from '@/types/lims';
+import { Assignment, TestingStandardSection, TestingCriterion, TableData, TableRowData, TableColumnDefinition } from '@/types/lims';
 
 interface UseStandardsDataReturn {
   standardSections: TestingStandardSection[];
@@ -62,36 +62,40 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
               sectionNumber: '2.6.1.1/7.2.1',
               tableStructure: {
                 columns: [
-                  { id: 'model', header: 'Model', type: 'readonly' },
+                  { 
+                    id: 'model', 
+                    header: 'Model', 
+                    type: 'readonly' as const
+                  },
                   { 
                     id: 'voltage', 
                     header: 'Recommended charging voltage Vcc (Vdc)', 
-                    type: 'number',
+                    type: 'number' as const,
                     unit: 'V',
                     placeholder: 'Enter voltage'
                   },
                   { 
                     id: 'current', 
                     header: 'Recommended charging current Irec (mA)', 
-                    type: 'number',
+                    type: 'number' as const,
                     unit: 'mA',
                     placeholder: 'Enter current'
                   },
                   { 
                     id: 'ocv', 
                     header: 'OCV at start of test, (Vdc)', 
-                    type: 'number',
+                    type: 'number' as const,
                     unit: 'V',
                     placeholder: 'Enter OCV'
                   },
                   { 
                     id: 'results', 
                     header: 'Results', 
-                    type: 'select', 
+                    type: 'select' as const, 
                     options: ['Pass', 'Fail', 'N/A'],
                     default: 'N/A'
                   }
-                ],
+                ] as TableColumnDefinition[],
                 rowTemplate: {
                   modelPrefix: 'C#',
                   modelCount: 5
@@ -112,29 +116,33 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
               sectionNumber: '2.6.1.2/7.2.2',
               tableStructure: {
                 columns: [
-                  { id: 'model', header: 'Model', type: 'readonly' },
+                  { 
+                    id: 'model', 
+                    header: 'Model', 
+                    type: 'readonly' as const
+                  },
                   { 
                     id: 'capacity', 
                     header: 'Measured Capacity (mAh)', 
-                    type: 'number',
+                    type: 'number' as const,
                     unit: 'mAh',
                     placeholder: 'Enter capacity'
                   },
                   { 
                     id: 'discharge_time', 
                     header: 'Discharge Time (hrs)', 
-                    type: 'number',
+                    type: 'number' as const,
                     unit: 'hrs',
                     placeholder: 'Enter time'
                   },
                   { 
                     id: 'results', 
                     header: 'Results', 
-                    type: 'select', 
+                    type: 'select' as const, 
                     options: ['Pass', 'Fail', 'N/A'],
                     default: 'N/A'
                   }
-                ],
+                ] as TableColumnDefinition[],
                 rowTemplate: {
                   modelPrefix: 'C#',
                   modelCount: 5
@@ -149,7 +157,7 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
                 equipment: 'PSI.TB-'
               }
             }
-          ]
+          ] as TestingCriterion[]
         }))
       };
 
