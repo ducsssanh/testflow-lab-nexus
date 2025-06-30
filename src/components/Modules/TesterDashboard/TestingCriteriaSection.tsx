@@ -6,28 +6,39 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ChevronDown, ChevronRight } from 'lucide-react';
-import { TestingCriterion, TestingAttempt } from '@/types/lims';
+import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
+import { TestingCriterion, TestingAttempt, TestingStandardSection } from '@/types/lims';
 
 interface TestingCriteriaSectionProps {
-  criteria: TestingCriterion[];
-  onUpdateCriteria: (criteria: TestingCriterion[]) => void;
+  standardSections: TestingStandardSection[];
+  onUpdateStandardSections: (sections: TestingStandardSection[]) => void;
 }
 
 const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
-  criteria,
-  onUpdateCriteria,
+  standardSections,
+  onUpdateStandardSections,
 }) => {
-  const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
+  const [expandedStandards, setExpandedStandards] = useState<Set<string>>(new Set());
+  const [expandedCriteria, setExpandedCriteria] = useState<Set<string>>(new Set());
 
-  const toggleExpanded = (id: string) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(id)) {
-      newExpanded.delete(id);
+  const toggleStandardExpanded = (standardId: string) => {
+    const newExpanded = new Set(expandedStandards);
+    if (newExpanded.has(standardId)) {
+      newExpanded.delete(standardId);
     } else {
-      newExpanded.add(id);
+      newExpanded.add(standardId);
     }
-    setExpandedItems(newExpanded);
+    setExpandedStandards(newExpanded);
+  };
+
+  const toggleCriteriaExpanded = (criteriaId: string) => {
+    const newExpanded = new Set(expandedCriteria);
+    if (newExpanded.has(criteriaId)) {
+      newExpanded.delete(criteriaId);
+    } else {
+      newExpanded.add(criteriaId);
+    }
+    setExpandedCriteria(newExpanded);
   };
 
   // Initialize fixed number of attempts (5 rows as shown in image)
@@ -49,13 +60,13 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     return { ...criterion, attempts };
   };
 
-  const updateAttempt = (criterionId: string, attemptIndex: number, field: keyof TestingAttempt, value: any) => {
+  const updateAttempt = (standardId: string, criterionId: string, attemptIndex: number, field: keyof TestingAttempt, value: any) => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual attempt update endpoint
-    // PUT /api/v1/testing-criteria/${criterionId}/attempts/${attemptIndex}
-    // const updateAttemptAPI = async (criterionId, attemptIndex, field, value) => {
+    // PUT /api/v1/testing-standards/${standardId}/criteria/${criterionId}/attempts/${attemptIndex}
+    // const updateAttemptAPI = async (standardId, criterionId, attemptIndex, field, value) => {
     //   try {
-    //     await fetch(`/api/v1/testing-criteria/${criterionId}/attempts/${attemptIndex}`, {
+    //     await fetch(`/api/v1/testing-standards/${standardId}/criteria/${criterionId}/attempts/${attemptIndex}`, {
     //       method: 'PUT',
     //       headers: { 'Content-Type': 'application/json' },
     //       body: JSON.stringify({ [field]: value })
@@ -79,7 +90,17 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
       return c;
     };
 
-    onUpdateCriteria(criteria.map(updateCriterion));
+    const updatedSections = standardSections.map(section => {
+      if (section.id === standardId) {
+        return {
+          ...section,
+          criteria: section.criteria.map(updateCriterion)
+        };
+      }
+      return section;
+    });
+
+    onUpdateStandardSections(updatedSections);
   };
 
   const calculateResult = (criterion: TestingCriterion): 'Pass' | 'Fail' | 'N/A' => {
@@ -99,9 +120,9 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     return 'N/A';
   };
 
-  const renderCriterionTable = (criterion: TestingCriterion, level: number = 0) => {
+  const renderCriterionTable = (standardId: string, criterion: TestingCriterion, level: number = 0) => {
     const hasChildren = criterion.children && criterion.children.length > 0;
-    const isExpanded = expandedItems.has(criterion.id);
+    const isExpanded = expandedCriteria.has(criterion.id);
     const result = calculateResult(criterion);
     const initializedCriterion = initializeAttempts(criterion);
 
@@ -116,7 +137,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => toggleExpanded(criterion.id)}
+                    onClick={() => toggleCriteriaExpanded(criterion.id)}
                   >
                     {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   </Button>
@@ -162,7 +183,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                       className="border-0 text-center h-8"
                       placeholder=""
                       value={attempt.value}
-                      onChange={(e) => updateAttempt(criterion.id, index, 'value', e.target.value)}
+                      onChange={(e) => updateAttempt(standardId, criterion.id, index, 'value', e.target.value)}
                     />
                   </TableCell>
                   <TableCell className="border-r p-1">
@@ -182,7 +203,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                   <TableCell className="text-center p-1">
                     <Select
                       value={attempt.result}
-                      onValueChange={(value) => updateAttempt(criterion.id, index, 'result', value as any)}
+                      onValueChange={(value) => updateAttempt(standardId, criterion.id, index, 'result', value as any)}
                     >
                       <SelectTrigger className="border-0 h-8">
                         <SelectValue />
@@ -218,7 +239,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
                     onChange={(e) => {
                       // TODO: REPLACE WITH REAL API CALL
                       // API_INTEGRATION: Save testing time to database
-                      // PUT /api/v1/testing-criteria/${criterion.id}/metadata
+                      // PUT /api/v1/testing-standards/${standardId}/criteria/${criterion.id}/metadata
                       console.log('Testing time updated:', e.target.value);
                     }}
                   />
@@ -258,24 +279,71 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
         {/* Children criteria */}
         {hasChildren && isExpanded && (
           <div className="ml-4 mt-4">
-            {criterion.children!.map(child => renderCriterionTable(child, level + 1))}
+            {criterion.children!.map(child => renderCriterionTable(standardId, child, level + 1))}
           </div>
         )}
       </div>
     );
   };
 
+  const renderStandardSection = (section: TestingStandardSection) => {
+    const isExpanded = expandedStandards.has(section.id);
+
+    return (
+      <Card key={section.id} className="mb-6">
+        <CardHeader 
+          className="cursor-pointer hover:bg-gray-50 transition-colors"
+          onClick={() => toggleStandardExpanded(section.id)}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              {isExpanded ? <ChevronDown className="h-5 w-5" /> : <ChevronRight className="h-5 w-5" />}
+              <FileText className="h-5 w-5 text-blue-600" />
+              <div>
+                <CardTitle className="text-lg text-blue-800">
+                  Standard: {section.standardName}
+                </CardTitle>
+                <p className="text-sm text-gray-600 mt-1">
+                  {section.sectionTitle} • {section.criteria.length} test criteria
+                </p>
+              </div>
+            </div>
+            <Badge variant="outline" className="bg-blue-50">
+              {section.criteria.length} Tests
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        {isExpanded && (
+          <CardContent>
+            <div className="space-y-6">
+              {section.criteria.map(criterion => renderCriterionTable(section.id, criterion))}
+            </div>
+          </CardContent>
+        )}
+      </Card>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Section 3: Testing Criteria</CardTitle>
+        <CardTitle>Section 3: Testing Criteria by Standards</CardTitle>
         <p className="text-sm text-gray-600">
-          Testing criteria with fixed number of test attempts. Each table represents a specific test procedure.
+          Testing criteria organized by testing standards. Each standard contains specific test procedures and requirements.
         </p>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {criteria.map(criterion => renderCriterionTable(criterion))}
+        <div className="space-y-4">
+          {standardSections.map(section => renderStandardSection(section))}
+          
+          {standardSections.length === 0 && (
+            <div className="text-center py-8 text-gray-500">
+              <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
+              <p>No testing standards loaded yet.</p>
+              <p className="text-sm">Standards will be loaded based on assignment requirements.</p>
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

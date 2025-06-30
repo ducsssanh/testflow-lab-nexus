@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, Plus } from 'lucide-react';
-import { Assignment, InspectionLog, TestingCriterion, ReportTemplate } from '@/types/lims';
+import { Assignment, InspectionLog, TestingStandardSection, ReportTemplate } from '@/types/lims';
 import { useToast } from '@/hooks/use-toast';
 import OrderInformationSection from './OrderInformationSection';
 import SampleInformationSection from './SampleInformationSection';
@@ -22,77 +22,83 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   onUpdateAssignment,
 }) => {
   const [inspectionLog, setInspectionLog] = useState<InspectionLog | null>(null);
-  const [testingCriteria, setTestingCriteria] = useState<TestingCriterion[]>([]);
+  const [standardSections, setStandardSections] = useState<TestingStandardSection[]>([]);
   const [reportTemplate, setReportTemplate] = useState<ReportTemplate | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     // TODO: REPLACE WITH REAL API CALLS
     // API_INTEGRATION: Replace mock template loading with actual API calls
-    loadTemplateData();
+    loadStandardsData();
     
     // API_INTEGRATION: Replace mock log loading with actual API call
     loadExistingLog();
   }, [assignment]);
 
-  const loadTemplateData = async () => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual template loading
-    // GET /api/v1/templates?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}
-    // const response = await fetch(`/api/v1/templates?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
-    // const template = await response.json();
-    // setReportTemplate(template);
-    // setTestingCriteria(template.sections.flatMap(s => s.criteria));
+  const loadStandardsData = async () => {
+    // TODO: REPLACE WITH REAL API CALLS
+    // API_INTEGRATION: Replace with actual standards loading
+    // GET /api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
+    // const response = await fetch(`/api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}`);
+    // const standardsData = await response.json();
+    // setStandardSections(standardsData.sections);
 
-    // Mock template data based on sample type and requirements
-    const mockTemplate: ReportTemplate = {
-      id: '1',
-      sampleType: assignment.sampleType,
-      testingRequirements: assignment.testingRequirements,
-      sections: [
+    // Mock standards data based on testing requirements
+    const mockStandardSections: TestingStandardSection[] = assignment.testingRequirements.map((standard, index) => ({
+      id: `standard-${index}`,
+      standardName: standard,
+      sectionTitle: getStandardSectionTitle(standard),
+      isExpanded: index === 0, // First standard expanded by default
+      criteria: [
         {
-          id: 'section1',
-          name: 'Basic Testing',
-          criteria: [
+          id: `${standard}-c1`,
+          name: 'Voltage Test',
+          unit: 'V',
+          attempts: [],
+          result: null,
+          children: [
             {
-              id: 'c1',
-              name: 'Voltage Test',
+              id: `${standard}-c1.1`,
+              name: 'Open Circuit Voltage',
               unit: 'V',
               attempts: [],
               result: null,
-              children: [
-                {
-                  id: 'c1.1',
-                  name: 'Open Circuit Voltage',
-                  unit: 'V',
-                  attempts: [],
-                  result: null,
-                  parentId: 'c1',
-                },
-                {
-                  id: 'c1.2',
-                  name: 'Load Voltage',
-                  unit: 'V',
-                  attempts: [],
-                  result: null,
-                  parentId: 'c1',
-                },
-              ],
+              parentId: `${standard}-c1`,
             },
             {
-              id: 'c2',
-              name: 'Capacity Test',
-              unit: 'mAh',
+              id: `${standard}-c1.2`,
+              name: 'Load Voltage',
+              unit: 'V',
               attempts: [],
               result: null,
+              parentId: `${standard}-c1`,
             },
           ],
         },
+        {
+          id: `${standard}-c2`,
+          name: 'Capacity Test',
+          unit: 'mAh',
+          attempts: [],
+          result: null,
+        },
       ],
-    };
+    }));
 
-    setReportTemplate(mockTemplate);
-    setTestingCriteria(mockTemplate.sections.flatMap(s => s.criteria));
+    setStandardSections(mockStandardSections);
+  };
+
+  const getStandardSectionTitle = (standard: string): string => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Get section titles from database
+    // GET /api/v1/testing-standards/${standard}/info
+    const standardTitles: Record<string, string> = {
+      'QCVN101:2020': 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
+      'QCVN101:2020+IEC': 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Standards',
+      'IEC62133': 'IEC 62133 - Secondary cells and batteries safety requirements',
+    };
+    
+    return standardTitles[standard] || `${standard} Testing Requirements`;
   };
 
   const loadExistingLog = async () => {
@@ -103,6 +109,9 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
     // if (response.ok) {
     //   const existingLog = await response.json();
     //   setInspectionLog(existingLog);
+    //   if (existingLog.standardSections) {
+    //     setStandardSections(existingLog.standardSections);
+    //   }
     // } else {
     //   // Create new log if none exists
     //   const newLog = { ... };
@@ -119,7 +128,8 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
         testSample: assignment.testSample,
         testingDate: new Date().toISOString().split('T')[0],
         sampleInfo: {},
-        testingCriteria: [],
+        testingCriteria: [], // Legacy field - will be migrated to standardSections
+        standardSections: [], // NEW: Will be populated from API
         status: 'Draft',
         createdBy: 'current-user',
         createdAt: new Date().toISOString(),
@@ -131,15 +141,15 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
 
   const handleUpdateCriteria = async () => {
     // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual criteria update endpoint
-    // GET /api/v1/templates/additional-criteria?sampleType=${assignment.sampleType}
-    // const response = await fetch(`/api/v1/templates/additional-criteria?sampleType=${assignment.sampleType}`);
-    // const additionalCriteria = await response.json();
-    // setTestingCriteria(prev => [...prev, ...additionalCriteria]);
+    // API_INTEGRATION: Replace with actual additional criteria endpoint
+    // GET /api/v1/testing-standards/additional-criteria?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
+    // const response = await fetch(`/api/v1/testing-standards/additional-criteria?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}`);
+    // const additionalSections = await response.json();
+    // setStandardSections(prev => [...prev, ...additionalSections]);
 
     toast({
       title: "Update Function",
-      description: "Additional testing criteria can be added per customer requests",
+      description: "Additional testing criteria can be added per customer requests for specific standards",
     });
   };
 
@@ -148,7 +158,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
 
     const updatedLog: InspectionLog = {
       ...inspectionLog,
-      testingCriteria,
+      standardSections,
       updatedAt: new Date().toISOString(),
     };
 
@@ -200,7 +210,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
     //     body: JSON.stringify({
     //       assignmentId: assignment.id,
     //       inspectionLogId: inspectionLog.id,
-    //       templateId: reportTemplate?.id
+    //       standardSections: standardSections
     //     })
     //   });
     //   const report = await response.json();
@@ -285,10 +295,10 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
         onUpdate={(sampleInfo) => setInspectionLog({ ...inspectionLog, sampleInfo })}
       />
 
-      {/* Section 3: Testing Criteria */}
+      {/* Section 3: Testing Criteria by Standards */}
       <TestingCriteriaSection
-        criteria={testingCriteria}
-        onUpdateCriteria={setTestingCriteria}
+        standardSections={standardSections}
+        onUpdateStandardSections={setStandardSections}
       />
     </div>
   );
