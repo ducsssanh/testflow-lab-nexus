@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Assignment, TestingStandardSection, CriterionTableData } from '@/types/lims';
+import { Assignment, TestingStandardSection, TestingCriterion, TableData, TableRowData } from '@/types/lims';
 
 interface UseStandardsDataReturn {
   standardSections: TestingStandardSection[];
@@ -11,10 +11,166 @@ interface UseStandardsDataReturn {
 export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn => {
   const [standardSections, setStandardSections] = useState<TestingStandardSection[]>([]);
 
+  const generateTableData = (criterion: TestingCriterion): TableData => {
+    const { rowTemplate } = criterion.tableStructure;
+    const rows: TableRowData[] = [];
+
+    if (rowTemplate.customModels) {
+      // Use custom model names
+      rowTemplate.customModels.forEach((model, index) => {
+        rows.push({
+          id: `row-${index + 1}`,
+          model: model,
+          values: {}
+        });
+      });
+    } else {
+      // Use prefix pattern
+      for (let i = 1; i <= rowTemplate.modelCount; i++) {
+        const modelNumber = i.toString().padStart(2, '0');
+        rows.push({
+          id: `row-${i}`,
+          model: `${rowTemplate.modelPrefix}${modelNumber}`,
+          values: {}
+        });
+      }
+    }
+
+    return { rows };
+  };
+
+  const loadStandardsData = async () => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Replace with actual standards loading
+    // GET /api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
+    
+    try {
+      // const response = await fetch(`/api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}`);
+      // const apiData = await response.json();
+      // setStandardSections(apiData.standardSections);
+
+      // Mock API response structure
+      const mockApiResponse = {
+        standardSections: assignment.testingRequirements.map((standard, index) => ({
+          id: `standard-${index}`,
+          standardName: standard,
+          sectionTitle: getStandardSectionTitle(standard),
+          criteria: [
+            {
+              id: `${standard}-continuous-charge`,
+              name: 'Continuous charge at constant voltage',
+              sectionNumber: '2.6.1.1/7.2.1',
+              tableStructure: {
+                columns: [
+                  { id: 'model', header: 'Model', type: 'readonly' },
+                  { 
+                    id: 'voltage', 
+                    header: 'Recommended charging voltage Vcc (Vdc)', 
+                    type: 'number',
+                    unit: 'V',
+                    placeholder: 'Enter voltage'
+                  },
+                  { 
+                    id: 'current', 
+                    header: 'Recommended charging current Irec (mA)', 
+                    type: 'number',
+                    unit: 'mA',
+                    placeholder: 'Enter current'
+                  },
+                  { 
+                    id: 'ocv', 
+                    header: 'OCV at start of test, (Vdc)', 
+                    type: 'number',
+                    unit: 'V',
+                    placeholder: 'Enter OCV'
+                  },
+                  { 
+                    id: 'results', 
+                    header: 'Results', 
+                    type: 'select', 
+                    options: ['Pass', 'Fail', 'N/A'],
+                    default: 'N/A'
+                  }
+                ],
+                rowTemplate: {
+                  modelPrefix: 'C#',
+                  modelCount: 5
+                }
+              },
+              result: null,
+              supplementaryInfo: {
+                defaultNotes: ['No fire, no explosion, no leakage'],
+                notes: ['No fire, no explosion, no leakage'],
+                testingTime: '',
+                tester: '',
+                equipment: 'PSI.TB-'
+              }
+            },
+            {
+              id: `${standard}-capacity-test`,
+              name: 'Capacity discharge test',
+              sectionNumber: '2.6.1.2/7.2.2',
+              tableStructure: {
+                columns: [
+                  { id: 'model', header: 'Model', type: 'readonly' },
+                  { 
+                    id: 'capacity', 
+                    header: 'Measured Capacity (mAh)', 
+                    type: 'number',
+                    unit: 'mAh',
+                    placeholder: 'Enter capacity'
+                  },
+                  { 
+                    id: 'discharge_time', 
+                    header: 'Discharge Time (hrs)', 
+                    type: 'number',
+                    unit: 'hrs',
+                    placeholder: 'Enter time'
+                  },
+                  { 
+                    id: 'results', 
+                    header: 'Results', 
+                    type: 'select', 
+                    options: ['Pass', 'Fail', 'N/A'],
+                    default: 'N/A'
+                  }
+                ],
+                rowTemplate: {
+                  modelPrefix: 'C#',
+                  modelCount: 5
+                }
+              },
+              result: null,
+              supplementaryInfo: {
+                defaultNotes: ['No fire, no explosion, no leakage'],
+                notes: ['No fire, no explosion, no leakage'],
+                testingTime: '',
+                tester: '',
+                equipment: 'PSI.TB-'
+              }
+            }
+          ]
+        }))
+      };
+
+      // Generate table data for each criterion
+      const processedSections = mockApiResponse.standardSections.map(section => ({
+        ...section,
+        criteria: section.criteria.map(criterion => ({
+          ...criterion,
+          tableData: generateTableData(criterion)
+        }))
+      }));
+
+      setStandardSections(processedSections);
+    } catch (error) {
+      console.error('Failed to load standards data:', error);
+    }
+  };
+
   const getStandardSectionTitle = (standard: string): string => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Get section titles from database
-    // GET /api/v1/testing-standards/${standard}/info
     const standardTitles: Record<string, string> = {
       'QCVN101:2020': 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
       'QCVN101:2020+IEC': 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Standards',
@@ -22,77 +178,6 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
     };
     
     return standardTitles[standard] || `${standard} Testing Requirements`;
-  };
-
-  const createMockTableData = (criterionName: string): CriterionTableData => {
-    // Mock data structure matching the image format
-    return {
-      sectionNumber: "2.6.1.1/7.2.1",
-      title: "Continuous charge at constant voltage (cells)",
-      columns: [
-        { id: 'model', header: 'Model', type: 'readonly' },
-        { id: 'voltage', header: 'Recommended charging voltage Vcc (Vdc)', type: 'text' },
-        { id: 'current', header: 'Recommended charging current Irec (mA)', type: 'text' },
-        { id: 'ocv', header: 'OCV at start of test, (Vdc)', type: 'text' },
-        { id: 'results', header: 'Results', type: 'select', options: ['Pass', 'Fail', 'N/A'] }
-      ],
-      rows: [
-        { id: 'row1', model: 'C#01', values: {} },
-        { id: 'row2', model: 'C#02', values: {} },
-        { id: 'row3', model: 'C#03', values: {} },
-        { id: 'row4', model: 'C#04', values: {} },
-        { id: 'row5', model: 'C#05', values: {} }
-      ]
-    };
-  };
-
-  const loadStandardsData = async () => {
-    // TODO: REPLACE WITH REAL API CALLS
-    // API_INTEGRATION: Replace with actual standards loading
-    // GET /api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
-    // Expected API response format should match the new CriterionTableData structure
-
-    // Mock standards data based on testing requirements with new structure
-    const mockStandardSections: TestingStandardSection[] = assignment.testingRequirements.map((standard, index) => ({
-      id: `standard-${index}`,
-      standardName: standard,
-      sectionTitle: getStandardSectionTitle(standard),
-      isExpanded: index === 0, // First standard expanded by default
-      criteria: [
-        {
-          id: `${standard}-c1`,
-          name: 'Voltage Test',
-          unit: 'V',
-          tableData: createMockTableData('Voltage Test'),
-          result: null,
-          supplementaryInfo: {
-            notes: ['No fire, no explosion, no leakage'],
-            testingTime: '',
-            tester: '',
-            equipment: 'PSI.TB-'
-          }
-        },
-        {
-          id: `${standard}-c2`,
-          name: 'Capacity Test',
-          unit: 'mAh',
-          tableData: {
-            ...createMockTableData('Capacity Test'),
-            title: 'Capacity discharge test',
-            sectionNumber: "2.6.1.2/7.2.2"
-          },
-          result: null,
-          supplementaryInfo: {
-            notes: ['No fire, no explosion, no leakage'],
-            testingTime: '',
-            tester: '',
-            equipment: 'PSI.TB-'
-          }
-        },
-      ],
-    }));
-
-    setStandardSections(mockStandardSections);
   };
 
   useEffect(() => {

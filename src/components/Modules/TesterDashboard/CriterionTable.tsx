@@ -3,6 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChevronDown, ChevronRight } from 'lucide-react';
@@ -31,7 +32,9 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
   const calculateResult = (criterion: TestingCriterion): 'Pass' | 'Fail' | 'N/A' => {
     if (!criterion.tableData?.rows) return 'N/A';
     
-    const resultColumn = criterion.tableData.columns.find(col => col.header.toLowerCase().includes('result'));
+    const resultColumn = criterion.tableStructure.columns.find(col => 
+      col.header.toLowerCase().includes('result') || col.id === 'results'
+    );
     if (!resultColumn) return 'N/A';
     
     const results = criterion.tableData.rows.map(row => row.values[resultColumn.id]);
@@ -46,12 +49,87 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
     return allPass ? 'Pass' : 'N/A';
   };
 
+  const renderInputField = (column: any, row: any) => {
+    const value = row.values[column.id] || column.default || '';
+    
+    switch (column.type) {
+      case 'select':
+        return (
+          <Select
+            value={value}
+            onValueChange={(newValue) => onUpdateTableData(standardId, criterion.id, row.id, column.id, newValue)}
+          >
+            <SelectTrigger className="border-0 h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {column.options?.map((option: string) => (
+                <SelectItem key={option} value={option}>
+                  {option}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        );
+      
+      case 'readonly':
+        return (
+          <div className="text-center h-8 flex items-center justify-center">
+            {value}
+          </div>
+        );
+      
+      case 'textarea':
+        return (
+          <Textarea
+            className="border-0 text-center min-h-[32px] resize-none"
+            placeholder={column.placeholder || ''}
+            value={value}
+            onChange={(e) => onUpdateTableData(standardId, criterion.id, row.id, column.id, e.target.value)}
+          />
+        );
+      
+      case 'number':
+        return (
+          <Input
+            type="number"
+            className="border-0 text-center h-8"
+            placeholder={column.placeholder || ''}
+            value={value}
+            min={column.validation?.min}
+            max={column.validation?.max}
+            onChange={(e) => onUpdateTableData(standardId, criterion.id, row.id, column.id, e.target.value)}
+          />
+        );
+      
+      case 'date':
+        return (
+          <Input
+            type="date"
+            className="border-0 text-center h-8"
+            value={value}
+            onChange={(e) => onUpdateTableData(standardId, criterion.id, row.id, column.id, e.target.value)}
+          />
+        );
+      
+      default: // text
+        return (
+          <Input
+            className="border-0 text-center h-8"
+            placeholder={column.placeholder || ''}
+            value={value}
+            onChange={(e) => onUpdateTableData(standardId, criterion.id, row.id, column.id, e.target.value)}
+          />
+        );
+    }
+  };
+
   const result = calculateResult(criterion);
 
-  if (!criterion.tableData) {
+  if (!criterion.tableStructure || !criterion.tableData) {
     return (
       <div className="text-center py-4 text-gray-500">
-        <p>No table data available for this criterion</p>
+        <p>No table structure or data available for this criterion</p>
       </div>
     );
   }
@@ -74,10 +152,10 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
               )}
               <div>
                 <h4 className="font-semibold text-blue-800">
-                  {criterion.tableData.sectionNumber}
+                  {criterion.sectionNumber}
                 </h4>
                 <p className="text-sm text-blue-600 mt-1">
-                  TABLE: {criterion.tableData.title}
+                  TABLE: {criterion.name}
                 </p>
               </div>
             </div>
@@ -94,9 +172,14 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100">
-              {criterion.tableData.columns.map((column) => (
-                <TableHead key={column.id} className="border-r font-semibold text-center">
+              {criterion.tableStructure.columns.map((column) => (
+                <TableHead 
+                  key={column.id} 
+                  className="border-r font-semibold text-center"
+                  style={{ width: column.width || 'auto' }}
+                >
                   {column.header}
+                  {column.unit && <span className="text-xs text-gray-500 ml-1">({column.unit})</span>}
                 </TableHead>
               ))}
             </TableRow>
@@ -104,38 +187,14 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
           <TableBody>
             {criterion.tableData.rows.map((row) => (
               <TableRow key={row.id} className="border-b">
-                <TableCell className="border-r text-center font-medium">
-                  {row.model}
-                </TableCell>
-                {criterion.tableData.columns.slice(1).map((column) => (
+                {criterion.tableStructure.columns.map((column, index) => (
                   <TableCell key={column.id} className="border-r p-1">
-                    {column.type === 'select' ? (
-                      <Select
-                        value={row.values[column.id] || ''}
-                        onValueChange={(value) => onUpdateTableData(standardId, criterion.id, row.id, column.id, value)}
-                      >
-                        <SelectTrigger className="border-0 h-8">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {column.options?.map((option) => (
-                            <SelectItem key={option} value={option}>
-                              {option}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : column.type === 'readonly' ? (
-                      <div className="text-center h-8 flex items-center justify-center">
-                        {row.values[column.id] || ''}
+                    {index === 0 ? (
+                      <div className="text-center font-medium h-8 flex items-center justify-center">
+                        {row.model}
                       </div>
                     ) : (
-                      <Input
-                        className="border-0 text-center h-8"
-                        placeholder=""
-                        value={row.values[column.id] || ''}
-                        onChange={(e) => onUpdateTableData(standardId, criterion.id, row.id, column.id, e.target.value)}
-                      />
+                      renderInputField(column, row)
                     )}
                   </TableCell>
                 ))}

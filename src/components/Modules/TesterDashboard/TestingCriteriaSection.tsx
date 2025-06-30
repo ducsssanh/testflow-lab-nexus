@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
@@ -44,6 +43,8 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     
     const updateCriterion = (c: any): any => {
       if (c.id === criterionId) {
+        if (!c.tableData) return c;
+        
         const updatedRows = c.tableData.rows.map((row: any) => {
           if (row.id === rowId) {
             return {

@@ -29,35 +29,55 @@ export interface Assignment {
 export interface TestingCriterion {
   id: string;
   name: string;
+  sectionNumber: string; // e.g., "2.6.1.1/7.2.1"
   parentId?: string; // For hierarchical criteria
-  unit?: string;
-  tableData: CriterionTableData; // NEW: Contains the structured table data
+  tableStructure: TableStructure;
+  tableData?: TableData; // Actual filled data
   result: 'Pass' | 'Fail' | 'N/A' | null;
   children?: TestingCriterion[];
   supplementaryInfo?: SupplementaryInfo;
 }
 
-export interface CriterionTableData {
-  sectionNumber: string; // e.g., "2.6.1.1/7.2.1"
-  title: string; // e.g., "Continuous charge at constant voltage (cells)"
-  columns: TableColumn[];
-  rows: TableRow[];
+export interface TableStructure {
+  columns: TableColumnDefinition[];
+  rowTemplate: RowTemplate;
 }
 
-export interface TableColumn {
+export interface TableColumnDefinition {
   id: string;
   header: string;
-  type: 'text' | 'select' | 'readonly';
+  type: 'text' | 'number' | 'select' | 'readonly' | 'date' | 'textarea';
+  unit?: string;
+  placeholder?: string;
   options?: string[]; // For select type columns
+  default?: string;
+  width?: string;
+  required?: boolean;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
 }
 
-export interface TableRow {
+export interface RowTemplate {
+  modelPrefix: string; // e.g., "C#", "P#", "S#"
+  modelCount: number; // Number of rows to generate
+  customModels?: string[]; // Custom model names if not using prefix pattern
+}
+
+export interface TableData {
+  rows: TableRowData[];
+}
+
+export interface TableRowData {
   id: string;
-  model: string; // e.g., "C#01", "C#02", etc.
+  model: string; // e.g., "C#01", "P#02", etc.
   values: Record<string, string>; // Column ID -> value mapping
 }
 
 export interface SupplementaryInfo {
+  defaultNotes?: string[];
   notes: string[];
   testingTime: string;
   tester: string;
