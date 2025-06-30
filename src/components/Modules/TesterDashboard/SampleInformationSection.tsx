@@ -20,21 +20,17 @@ const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual sample info update endpoint
     // PUT /api/v1/inspection-logs/${inspectionLogId}/sample-info
-    // const updateSampleInfo = async (field, value) => {
-    //   try {
-    //     await fetch(`/api/v1/inspection-logs/${inspectionLogId}/sample-info`, {
-    //       method: 'PUT',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify({ [field]: value })
-    //     });
-    //   } catch (error) {
-    //     console.error('Failed to update sample info:', error);
-    //   }
-    // };
-
+    // This should save individual field updates to the database
+    // Request body: { [field]: value }
+    
     onUpdate({ ...sampleInfo, [field]: value });
   };
 
+  // TODO: REPLACE WITH REAL API CALL  
+  // API_INTEGRATION: Form fields should be fetched from backend based on sample type
+  // GET /api/v1/templates/sample-fields?sampleType=${assignment.sampleType}
+  // This will return the appropriate form fields configuration for each sample type
+  
   const renderBatteryFields = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>

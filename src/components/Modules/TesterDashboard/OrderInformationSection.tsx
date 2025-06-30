@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { InspectionLog } from '@/types/lims';
 
 interface OrderInformationSectionProps {
@@ -26,7 +27,8 @@ const OrderInformationSection: React.FC<OrderInformationSectionProps> = ({
             <Input
               id="sampleSymbol"
               value={inspectionLog.sampleSymbol}
-              onChange={(e) => onUpdate({ sampleSymbol: e.target.value })}
+              readOnly
+              className="bg-gray-50"
               placeholder="Enter sample symbol"
             />
           </div>
@@ -43,14 +45,16 @@ const OrderInformationSection: React.FC<OrderInformationSectionProps> = ({
           
           <div className="md:col-span-2">
             <Label htmlFor="testingStandards">Testing Standards</Label>
-            <Input
-              id="testingStandards"
-              value={inspectionLog.testingStandards.join(', ')}
-              onChange={(e) => onUpdate({ 
-                testingStandards: e.target.value.split(', ').filter(s => s.trim()) 
-              })}
-              placeholder="e.g., QCVN 101:2020/BTTT, IEC 62133-2:2017"
-            />
+            <div className="flex flex-wrap gap-2 mt-2 p-3 border rounded-md bg-gray-50">
+              {inspectionLog.testingStandards.map((standard, index) => (
+                <Badge key={index} variant="secondary" className="text-sm">
+                  {standard}
+                </Badge>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Each standard represents a separate testing section. Standards are pre-assigned and cannot be modified.
+            </p>
           </div>
           
           <div className="md:col-span-2">
@@ -58,7 +62,8 @@ const OrderInformationSection: React.FC<OrderInformationSectionProps> = ({
             <Input
               id="testSample"
               value={inspectionLog.testSample}
-              onChange={(e) => onUpdate({ testSample: e.target.value })}
+              readOnly
+              className="bg-gray-50"
               placeholder="Enter model name"
             />
           </div>
