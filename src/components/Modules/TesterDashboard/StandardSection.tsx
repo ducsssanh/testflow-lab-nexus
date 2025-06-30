@@ -1,10 +1,9 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
-import { TestingStandardSection, TestingAttempt } from '@/types/lims';
+import { TestingStandardSection } from '@/types/lims';
 import CriterionTable from './CriterionTable';
 
 interface StandardSectionProps {
@@ -13,7 +12,7 @@ interface StandardSectionProps {
   expandedCriteria: Set<string>;
   onToggleStandardExpanded: (standardId: string) => void;
   onToggleCriteriaExpanded: (criteriaId: string) => void;
-  onUpdateAttempt: (standardId: string, criterionId: string, attemptIndex: number, field: keyof TestingAttempt, value: any) => void;
+  onUpdateTableData: (standardId: string, criterionId: string, rowId: string, columnId: string, value: string) => void;
 }
 
 const StandardSection: React.FC<StandardSectionProps> = ({
@@ -22,7 +21,7 @@ const StandardSection: React.FC<StandardSectionProps> = ({
   expandedCriteria,
   onToggleStandardExpanded,
   onToggleCriteriaExpanded,
-  onUpdateAttempt,
+  onUpdateTableData,
 }) => {
   return (
     <Card className="mb-6">
@@ -60,7 +59,7 @@ const StandardSection: React.FC<StandardSectionProps> = ({
                 level={0}
                 isExpanded={expandedCriteria.has(criterion.id)}
                 onToggleExpanded={onToggleCriteriaExpanded}
-                onUpdateAttempt={onUpdateAttempt}
+                onUpdateTableData={onUpdateTableData}
               />
             ))}
           </div>

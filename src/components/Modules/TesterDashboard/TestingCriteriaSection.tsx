@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
-import { TestingAttempt, TestingStandardSection } from '@/types/lims';
+import { TestingStandardSection } from '@/types/lims';
 import StandardSection from './StandardSection';
 
 interface TestingCriteriaSectionProps {
@@ -37,29 +37,33 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     setExpandedCriteria(newExpanded);
   };
 
-  const updateAttempt = (standardId: string, criterionId: string, attemptIndex: number, field: keyof TestingAttempt, value: any) => {
+  const updateTableData = (standardId: string, criterionId: string, rowId: string, columnId: string, value: string) => {
     // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual attempt update endpoint
-    // PUT /api/v1/testing-standards/${standardId}/criteria/${criterionId}/attempts/${attemptIndex}
-    // const updateAttemptAPI = async (standardId, criterionId, attemptIndex, field, value) => {
-    //   try {
-    //     await fetch(`/api/v1/testing-standards/${standardId}/criteria/${criterionId}/attempts/${attemptIndex}`, {
-    //       method: 'PUT',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify({ [field]: value })
-    //     });
-    //   } catch (error) {
-    //     console.error('Failed to update attempt:', error);
-    //   }
-    // };
-
+    // API_INTEGRATION: Replace with actual table data update endpoint
+    // PUT /api/v1/testing-standards/${standardId}/criteria/${criterionId}/table-data
+    
     const updateCriterion = (c: any): any => {
       if (c.id === criterionId) {
-        const updatedAttempts = [...c.attempts];
-        if (updatedAttempts[attemptIndex]) {
-          updatedAttempts[attemptIndex] = { ...updatedAttempts[attemptIndex], [field]: value };
-        }
-        return { ...c, attempts: updatedAttempts };
+        const updatedRows = c.tableData.rows.map((row: any) => {
+          if (row.id === rowId) {
+            return {
+              ...row,
+              values: {
+                ...row.values,
+                [columnId]: value
+              }
+            };
+          }
+          return row;
+        });
+        
+        return {
+          ...c,
+          tableData: {
+            ...c.tableData,
+            rows: updatedRows
+          }
+        };
       }
       if (c.children) {
         return { ...c, children: c.children.map(updateCriterion) };
@@ -98,7 +102,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
               expandedCriteria={expandedCriteria}
               onToggleStandardExpanded={toggleStandardExpanded}
               onToggleCriteriaExpanded={toggleCriteriaExpanded}
-              onUpdateAttempt={updateAttempt}
+              onUpdateTableData={updateTableData}
             />
           ))}
           

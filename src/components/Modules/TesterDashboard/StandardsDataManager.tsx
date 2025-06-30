@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { Assignment, TestingStandardSection } from '@/types/lims';
+import { Assignment, TestingStandardSection, CriterionTableData } from '@/types/lims';
 
 interface UseStandardsDataReturn {
   standardSections: TestingStandardSection[];
@@ -24,15 +24,35 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
     return standardTitles[standard] || `${standard} Testing Requirements`;
   };
 
+  const createMockTableData = (criterionName: string): CriterionTableData => {
+    // Mock data structure matching the image format
+    return {
+      sectionNumber: "2.6.1.1/7.2.1",
+      title: "Continuous charge at constant voltage (cells)",
+      columns: [
+        { id: 'model', header: 'Model', type: 'readonly' },
+        { id: 'voltage', header: 'Recommended charging voltage Vcc (Vdc)', type: 'text' },
+        { id: 'current', header: 'Recommended charging current Irec (mA)', type: 'text' },
+        { id: 'ocv', header: 'OCV at start of test, (Vdc)', type: 'text' },
+        { id: 'results', header: 'Results', type: 'select', options: ['Pass', 'Fail', 'N/A'] }
+      ],
+      rows: [
+        { id: 'row1', model: 'C#01', values: {} },
+        { id: 'row2', model: 'C#02', values: {} },
+        { id: 'row3', model: 'C#03', values: {} },
+        { id: 'row4', model: 'C#04', values: {} },
+        { id: 'row5', model: 'C#05', values: {} }
+      ]
+    };
+  };
+
   const loadStandardsData = async () => {
     // TODO: REPLACE WITH REAL API CALLS
     // API_INTEGRATION: Replace with actual standards loading
     // GET /api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
-    // const response = await fetch(`/api/v1/testing-standards?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}`);
-    // const standardsData = await response.json();
-    // setStandardSections(standardsData.sections);
+    // Expected API response format should match the new CriterionTableData structure
 
-    // Mock standards data based on testing requirements
+    // Mock standards data based on testing requirements with new structure
     const mockStandardSections: TestingStandardSection[] = assignment.testingRequirements.map((standard, index) => ({
       id: `standard-${index}`,
       standardName: standard,
@@ -43,33 +63,31 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
           id: `${standard}-c1`,
           name: 'Voltage Test',
           unit: 'V',
-          attempts: [],
+          tableData: createMockTableData('Voltage Test'),
           result: null,
-          children: [
-            {
-              id: `${standard}-c1.1`,
-              name: 'Open Circuit Voltage',
-              unit: 'V',
-              attempts: [],
-              result: null,
-              parentId: `${standard}-c1`,
-            },
-            {
-              id: `${standard}-c1.2`,
-              name: 'Load Voltage',
-              unit: 'V',
-              attempts: [],
-              result: null,
-              parentId: `${standard}-c1`,
-            },
-          ],
+          supplementaryInfo: {
+            notes: ['No fire, no explosion, no leakage'],
+            testingTime: '',
+            tester: '',
+            equipment: 'PSI.TB-'
+          }
         },
         {
           id: `${standard}-c2`,
           name: 'Capacity Test',
           unit: 'mAh',
-          attempts: [],
+          tableData: {
+            ...createMockTableData('Capacity Test'),
+            title: 'Capacity discharge test',
+            sectionNumber: "2.6.1.2/7.2.2"
+          },
           result: null,
+          supplementaryInfo: {
+            notes: ['No fire, no explosion, no leakage'],
+            testingTime: '',
+            tester: '',
+            equipment: 'PSI.TB-'
+          }
         },
       ],
     }));

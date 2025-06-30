@@ -1,20 +1,35 @@
 
 import React from 'react';
 import { Input } from '@/components/ui/input';
+import { SupplementaryInfo as SupplementaryInfoType } from '@/types/lims';
 
 interface SupplementaryInfoProps {
   standardId: string;
   criterionId: string;
+  supplementaryInfo?: SupplementaryInfoType;
 }
 
-const SupplementaryInfo: React.FC<SupplementaryInfoProps> = ({ standardId, criterionId }) => {
+const SupplementaryInfo: React.FC<SupplementaryInfoProps> = ({ 
+  standardId, 
+  criterionId, 
+  supplementaryInfo 
+}) => {
+  const handleUpdate = (field: keyof SupplementaryInfoType, value: string) => {
+    // TODO: REPLACE WITH REAL API CALL
+    // API_INTEGRATION: Save supplementary info to database
+    // PUT /api/v1/testing-standards/${standardId}/criteria/${criterionId}/supplementary-info
+    console.log(`Updating ${field}:`, value);
+  };
+
   return (
     <div className="p-4 bg-gray-50 border-t">
       <div className="space-y-3">
         <div>
           <strong>Supplementary information:</strong>
           <div className="ml-4 mt-1">
-            - No fire, no explosion, no leakage
+            {supplementaryInfo?.notes?.map((note, index) => (
+              <div key={index}>- {note}</div>
+            )) || <div>- No fire, no explosion, no leakage</div>}
           </div>
         </div>
         
@@ -24,12 +39,8 @@ const SupplementaryInfo: React.FC<SupplementaryInfoProps> = ({ standardId, crite
             <Input 
               className="mt-1 h-8" 
               placeholder="Enter testing time"
-              onChange={(e) => {
-                // TODO: REPLACE WITH REAL API CALL
-                // API_INTEGRATION: Save testing time to database
-                // PUT /api/v1/testing-standards/${standardId}/criteria/${criterionId}/metadata
-                console.log('Testing time updated:', e.target.value);
-              }}
+              value={supplementaryInfo?.testingTime || ''}
+              onChange={(e) => handleUpdate('testingTime', e.target.value)}
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -38,11 +49,8 @@ const SupplementaryInfo: React.FC<SupplementaryInfoProps> = ({ standardId, crite
               <Input 
                 className="mt-1 h-8" 
                 placeholder="Tester name"
-                onChange={(e) => {
-                  // TODO: REPLACE WITH REAL API CALL
-                  // API_INTEGRATION: Save tester info to database
-                  console.log('Tester updated:', e.target.value);
-                }}
+                value={supplementaryInfo?.tester || ''}
+                onChange={(e) => handleUpdate('tester', e.target.value)}
               />
             </div>
             <div>
@@ -50,12 +58,8 @@ const SupplementaryInfo: React.FC<SupplementaryInfoProps> = ({ standardId, crite
               <Input 
                 className="mt-1 h-8" 
                 placeholder="Equipment ID"
-                defaultValue="PSI.TB-"
-                onChange={(e) => {
-                  // TODO: REPLACE WITH REAL API CALL
-                  // API_INTEGRATION: Save equipment info to database
-                  console.log('Equipment updated:', e.target.value);
-                }}
+                value={supplementaryInfo?.equipment || 'PSI.TB-'}
+                onChange={(e) => handleUpdate('equipment', e.target.value)}
               />
             </div>
           </div>

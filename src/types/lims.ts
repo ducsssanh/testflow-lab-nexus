@@ -31,9 +31,37 @@ export interface TestingCriterion {
   name: string;
   parentId?: string; // For hierarchical criteria
   unit?: string;
-  attempts: TestingAttempt[];
+  tableData: CriterionTableData; // NEW: Contains the structured table data
   result: 'Pass' | 'Fail' | 'N/A' | null;
   children?: TestingCriterion[];
+  supplementaryInfo?: SupplementaryInfo;
+}
+
+export interface CriterionTableData {
+  sectionNumber: string; // e.g., "2.6.1.1/7.2.1"
+  title: string; // e.g., "Continuous charge at constant voltage (cells)"
+  columns: TableColumn[];
+  rows: TableRow[];
+}
+
+export interface TableColumn {
+  id: string;
+  header: string;
+  type: 'text' | 'select' | 'readonly';
+  options?: string[]; // For select type columns
+}
+
+export interface TableRow {
+  id: string;
+  model: string; // e.g., "C#01", "C#02", etc.
+  values: Record<string, string>; // Column ID -> value mapping
+}
+
+export interface SupplementaryInfo {
+  notes: string[];
+  testingTime: string;
+  tester: string;
+  equipment: string;
 }
 
 export interface TestingAttempt {

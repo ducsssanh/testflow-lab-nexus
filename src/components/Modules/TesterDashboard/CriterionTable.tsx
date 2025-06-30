@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { TestingCriterion, TestingAttempt } from '@/types/lims';
+import { TestingCriterion } from '@/types/lims';
 import SupplementaryInfo from './SupplementaryInfo';
 
 interface CriterionTableProps {
@@ -15,7 +15,7 @@ interface CriterionTableProps {
   level: number;
   isExpanded: boolean;
   onToggleExpanded: (criteriaId: string) => void;
-  onUpdateAttempt: (standardId: string, criterionId: string, attemptIndex: number, field: keyof TestingAttempt, value: any) => void;
+  onUpdateTableData: (standardId: string, criterionId: string, rowId: string, columnId: string, value: string) => void;
 }
 
 const CriterionTable: React.FC<CriterionTableProps> = ({
@@ -24,48 +24,37 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
   level,
   isExpanded,
   onToggleExpanded,
-  onUpdateAttempt,
+  onUpdateTableData,
 }) => {
   const hasChildren = criterion.children && criterion.children.length > 0;
 
-  // Initialize fixed number of attempts (5 rows as shown in image)
-  const initializeAttempts = (criterion: TestingCriterion): TestingCriterion => {
-    const fixedAttemptCount = 5;
-    const attempts: TestingAttempt[] = [];
-    
-    for (let i = 0; i < fixedAttemptCount; i++) {
-      const existingAttempt = criterion.attempts[i];
-      attempts.push(existingAttempt || {
-        id: `${criterion.id}-attempt-${i + 1}`,
-        value: '',
-        result: 'N/A',
-        timestamp: new Date().toISOString(),
-        testerId: 'current-user',
-      });
-    }
-    
-    return { ...criterion, attempts };
-  };
-
   const calculateResult = (criterion: TestingCriterion): 'Pass' | 'Fail' | 'N/A' => {
-    if (criterion.attempts.length === 0) return 'N/A';
+    if (!criterion.tableData?.rows) return 'N/A';
     
-    const hasValues = criterion.attempts.some(a => a.value.trim() !== '');
+    const resultColumn = criterion.tableData.columns.find(col => col.header.toLowerCase().includes('result'));
+    if (!resultColumn) return 'N/A';
+    
+    const results = criterion.tableData.rows.map(row => row.values[resultColumn.id]);
+    const hasValues = results.some(result => result && result.trim() !== '' && result !== 'N/A');
+    
     if (!hasValues) return 'N/A';
     
-    // All attempts with values must pass for the criterion to pass
-    const attemptsWithValues = criterion.attempts.filter(a => a.value.trim() !== '');
-    const allPass = attemptsWithValues.every(a => a.result === 'Pass');
-    if (allPass && attemptsWithValues.length > 0) return 'Pass';
+    const hasFailure = results.some(result => result === 'Fail');
+    if (hasFailure) return 'Fail';
     
-    const anyFail = attemptsWithValues.some(a => a.result === 'Fail');
-    if (anyFail) return 'Fail';
-    
-    return 'N/A';
+    const allPass = results.every(result => result === 'Pass' || result === '' || result === 'N/A');
+    return allPass ? 'Pass' : 'N/A';
   };
 
   const result = calculateResult(criterion);
-  const initializedCriterion = initializeAttempts(criterion);
+
+  if (!criterion.tableData) {
+    return (
+      <div className="text-center py-4 text-gray-500">
+        <p>No table data available for this criterion</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-200 pl-4' : ''} mb-6`}>
@@ -83,9 +72,14 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
                   {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                 </Button>
               )}
-              <h4 className="font-semibold text-blue-800">
-                TABLE: {criterion.name}
-              </h4>
+              <div>
+                <h4 className="font-semibold text-blue-800">
+                  {criterion.tableData.sectionNumber}
+                </h4>
+                <p className="text-sm text-blue-600 mt-1">
+                  TABLE: {criterion.tableData.title}
+                </p>
+              </div>
             </div>
             <Badge 
               variant={result === 'Pass' ? 'default' : result === 'Fail' ? 'destructive' : 'secondary'}
@@ -100,69 +94,62 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-100">
-              <TableHead className="border-r font-semibold text-center">Model</TableHead>
-              <TableHead className="border-r font-semibold text-center">
-                Recommended charging voltage V<sub>cc</sub> (Vdc)
-              </TableHead>
-              <TableHead className="border-r font-semibold text-center">
-                Recommended charging current I<sub>rec</sub> (mA)
-              </TableHead>
-              <TableHead className="border-r font-semibold text-center">
-                OCV at start of test, (Vdc)
-              </TableHead>
-              <TableHead className="font-semibold text-center">Results</TableHead>
+              {criterion.tableData.columns.map((column) => (
+                <TableHead key={column.id} className="border-r font-semibold text-center">
+                  {column.header}
+                </TableHead>
+              ))}
             </TableRow>
           </TableHeader>
           <TableBody>
-            {initializedCriterion.attempts.map((attempt, index) => (
-              <TableRow key={attempt.id} className="border-b">
+            {criterion.tableData.rows.map((row) => (
+              <TableRow key={row.id} className="border-b">
                 <TableCell className="border-r text-center font-medium">
-                  C#{(index + 1).toString().padStart(2, '0')}
+                  {row.model}
                 </TableCell>
-                <TableCell className="border-r p-1">
-                  <Input
-                    className="border-0 text-center h-8"
-                    placeholder=""
-                    value={attempt.value}
-                    onChange={(e) => onUpdateAttempt(standardId, criterion.id, index, 'value', e.target.value)}
-                  />
-                </TableCell>
-                <TableCell className="border-r p-1">
-                  <Input
-                    className="border-0 text-center h-8"
-                    placeholder=""
-                    onChange={(e) => console.log('Current input:', e.target.value)}
-                  />
-                </TableCell>
-                <TableCell className="border-r p-1">
-                  <Input
-                    className="border-0 text-center h-8"
-                    placeholder=""
-                    onChange={(e) => console.log('OCV input:', e.target.value)}
-                  />
-                </TableCell>
-                <TableCell className="text-center p-1">
-                  <Select
-                    value={attempt.result}
-                    onValueChange={(value) => onUpdateAttempt(standardId, criterion.id, index, 'result', value as any)}
-                  >
-                    <SelectTrigger className="border-0 h-8">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Pass">Pass</SelectItem>
-                      <SelectItem value="Fail">Fail</SelectItem>
-                      <SelectItem value="N/A">N/A</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </TableCell>
+                {criterion.tableData.columns.slice(1).map((column) => (
+                  <TableCell key={column.id} className="border-r p-1">
+                    {column.type === 'select' ? (
+                      <Select
+                        value={row.values[column.id] || ''}
+                        onValueChange={(value) => onUpdateTableData(standardId, criterion.id, row.id, column.id, value)}
+                      >
+                        <SelectTrigger className="border-0 h-8">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {column.options?.map((option) => (
+                            <SelectItem key={option} value={option}>
+                              {option}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : column.type === 'readonly' ? (
+                      <div className="text-center h-8 flex items-center justify-center">
+                        {row.values[column.id] || ''}
+                      </div>
+                    ) : (
+                      <Input
+                        className="border-0 text-center h-8"
+                        placeholder=""
+                        value={row.values[column.id] || ''}
+                        onChange={(e) => onUpdateTableData(standardId, criterion.id, row.id, column.id, e.target.value)}
+                      />
+                    )}
+                  </TableCell>
+                ))}
               </TableRow>
             ))}
           </TableBody>
         </Table>
 
         {/* Supplementary Information */}
-        <SupplementaryInfo standardId={standardId} criterionId={criterion.id} />
+        <SupplementaryInfo 
+          standardId={standardId} 
+          criterionId={criterion.id}
+          supplementaryInfo={criterion.supplementaryInfo}
+        />
       </div>
 
       {/* Children criteria */}
@@ -176,7 +163,7 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
               level={level + 1}
               isExpanded={isExpanded}
               onToggleExpanded={onToggleExpanded}
-              onUpdateAttempt={onUpdateAttempt}
+              onUpdateTableData={onUpdateTableData}
             />
           ))}
         </div>
