@@ -35,7 +35,7 @@ const StandardSection: React.FC<StandardSectionProps> = ({
             <FileText className="h-5 w-5 text-blue-600" />
             <div>
               <CardTitle className="text-lg text-blue-800">
-                Standard: {section.standardName}
+                Requirement: {section.standardName}
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
                 {section.sectionTitle} • {section.criteria.length} test criteria

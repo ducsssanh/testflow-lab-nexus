@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
@@ -39,7 +40,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
   const updateTableData = (standardId: string, criterionId: string, rowId: string, columnId: string, value: string) => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual table data update endpoint
-    // PUT /api/v1/testing-standards/${standardId}/criteria/${criterionId}/table-data
+    // PUT /api/v1/testing-criteria/${standardId}/criteria/${criterionId}/table-data
     
     const updateCriterion = (c: any): any => {
       if (c.id === criterionId) {
@@ -88,9 +89,9 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Section 3: Testing Criteria by Standards</CardTitle>
+        <CardTitle>Section 3: Testing Criteria by Requirements</CardTitle>
         <p className="text-sm text-gray-600">
-          Testing criteria organized by testing standards. Each standard contains specific test procedures and requirements.
+          Testing criteria organized by testing requirements. Each requirement contains specific test procedures based on sample type.
         </p>
       </CardHeader>
       <CardContent>
@@ -110,8 +111,8 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
           {standardSections.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No testing standards loaded yet.</p>
-              <p className="text-sm">Standards will be loaded based on assignment requirements.</p>
+              <p>No testing requirements loaded yet.</p>
+              <p className="text-sm">Requirements will be loaded based on assignment and sample type.</p>
             </div>
           )}
         </div>
