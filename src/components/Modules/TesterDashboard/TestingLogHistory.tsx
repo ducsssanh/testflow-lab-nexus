@@ -38,6 +38,15 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
         testingDate: '2024-01-15',
         sampleInfo: { voltage: '3.7V', capacity: '2000mAh' },
         testingCriteria: [],
+        standardSections: [
+          {
+            id: 'standard-0',
+            standardName: 'QCVN101:2020+IEC',
+            sectionTitle: 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Standards',
+            isExpanded: false,
+            criteria: []
+          }
+        ],
         status: 'Completed',
         createdBy: 'current-user',
         createdAt: '2024-01-15T09:00:00Z',
@@ -52,6 +61,15 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
         testingDate: '2024-01-16',
         sampleInfo: { powerRating: '300W', inputVoltage: '100-240VAC' },
         testingCriteria: [],
+        standardSections: [
+          {
+            id: 'standard-0',
+            standardName: 'QCVN101:2020',
+            sectionTitle: 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
+            isExpanded: false,
+            criteria: []
+          }
+        ],
         status: 'Draft',
         createdBy: 'current-user',
         createdAt: '2024-01-16T10:00:00Z',
