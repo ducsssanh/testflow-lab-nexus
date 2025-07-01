@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
 import { TestingRequirementSection } from '@/types/lims';
-import RequirementSection from './StandardSection';
+import CriterionTable from './CriterionTable';
 
 interface TestingCriteriaSectionProps {
   requirementSections: TestingRequirementSection[];
@@ -14,18 +14,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
   requirementSections,
   onUpdateRequirementSections,
 }) => {
-  const [expandedRequirements, setExpandedRequirements] = useState<Set<string>>(new Set());
   const [expandedCriteria, setExpandedCriteria] = useState<Set<string>>(new Set());
-
-  const toggleRequirementExpanded = (requirementId: string) => {
-    const newExpanded = new Set(expandedRequirements);
-    if (newExpanded.has(requirementId)) {
-      newExpanded.delete(requirementId);
-    } else {
-      newExpanded.add(requirementId);
-    }
-    setExpandedRequirements(newExpanded);
-  };
 
   const toggleCriteriaExpanded = (criteriaId: string) => {
     const newExpanded = new Set(expandedCriteria);
@@ -86,33 +75,41 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     onUpdateRequirementSections(updatedSections);
   };
 
+  // Flatten all criteria from all requirement sections
+  const allCriteria = requirementSections.flatMap(section => 
+    section.criteria.map(criterion => ({
+      ...criterion,
+      requirementId: section.id
+    }))
+  );
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Section 3: Testing Criteria by Requirements</CardTitle>
+        <CardTitle>Section 3: Testing Criteria</CardTitle>
         <p className="text-sm text-gray-600">
-          Testing criteria organized by testing requirements. Each requirement contains specific test procedures based on sample type.
+          Testing criteria for the assigned sample. Each criterion contains specific test procedures and requirements.
         </p>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {requirementSections.map(section => (
-            <RequirementSection
-              key={section.id}
-              section={section}
-              isExpanded={expandedRequirements.has(section.id)}
-              expandedCriteria={expandedCriteria}
-              onToggleRequirementExpanded={toggleRequirementExpanded}
-              onToggleCriteriaExpanded={toggleCriteriaExpanded}
+          {allCriteria.map(criterion => (
+            <CriterionTable
+              key={criterion.id}
+              standardId={criterion.requirementId}
+              criterion={criterion}
+              level={0}
+              isExpanded={expandedCriteria.has(criterion.id)}
+              onToggleExpanded={toggleCriteriaExpanded}
               onUpdateTableData={updateTableData}
             />
           ))}
           
-          {requirementSections.length === 0 && (
+          {allCriteria.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>No testing requirements loaded yet.</p>
-              <p className="text-sm">Requirements will be loaded based on assignment and sample type.</p>
+              <p>No testing criteria loaded yet.</p>
+              <p className="text-sm">Criteria will be loaded based on assignment and sample type.</p>
             </div>
           )}
         </div>
