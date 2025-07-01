@@ -36,6 +36,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
     requirementSections,
     onUpdateAssignment,
     onUpdateInspectionLog: setInspectionLog,
+    onUpdateRequirementSections: setRequirementSections,
   });
 
   if (!inspectionLog) {

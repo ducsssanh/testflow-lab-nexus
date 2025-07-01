@@ -9,6 +9,7 @@ interface InspectionActionsProps {
   requirementSections: TestingRequirementSection[];
   onUpdateAssignment: (assignment: Assignment) => void;
   onUpdateInspectionLog: (log: InspectionLog) => void;
+  onUpdateRequirementSections: (sections: TestingRequirementSection[]) => void;
 }
 
 export const useInspectionActions = ({
@@ -17,34 +18,54 @@ export const useInspectionActions = ({
   requirementSections,
   onUpdateAssignment,
   onUpdateInspectionLog,
+  onUpdateRequirementSections,
 }: InspectionActionsProps) => {
   const { toast } = useToast();
 
   const handleUpdateCriteria = async () => {
     try {
-      const response = await fetch(`/api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
+      // First, get additional criteria
+      const additionalResponse = await fetch(`/api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      if (!additionalResponse.ok) {
+        throw new Error(`HTTP error! status: ${additionalResponse.status}`);
       }
       
-      const apiResponse = await response.json();
+      const additionalApiResponse = await additionalResponse.json();
       
-      if (apiResponse.success) {
-        // Add additional criteria to existing sections
-        const additionalSections = apiResponse.data.additionalCriteria;
-        // This would be handled by the parent component that manages requirementSections
-        console.log('Additional criteria loaded:', additionalSections);
+      if (additionalApiResponse.success) {
+        const additionalSections = additionalApiResponse.data.additionalCriteria;
         
-        toast({
-          title: "Additional Criteria Loaded",
-          description: "Customer-specific testing requirements have been added",
-        });
+        // Merge additional criteria with existing ones
+        const updatedSections = [...requirementSections, ...additionalSections];
+        
+        // Now query the complete testing criteria with the updated requirements
+        const allRequirements = [...assignment.testingRequirements, ...additionalSections.map((s: TestingRequirementSection) => s.requirementName)];
+        
+        const criteriaResponse = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${allRequirements.join(',')}`);
+        
+        if (!criteriaResponse.ok) {
+          throw new Error(`HTTP error! status: ${criteriaResponse.status}`);
+        }
+        
+        const criteriaApiResponse = await criteriaResponse.json();
+        
+        if (criteriaApiResponse.success) {
+          // Update with the complete testing criteria
+          onUpdateRequirementSections(criteriaApiResponse.data.testingCriteria);
+          
+          toast({
+            title: "Criteria Updated",
+            description: "Additional testing requirements have been loaded and integrated",
+          });
+        } else {
+          throw new Error(criteriaApiResponse.error?.message || 'Failed to load complete testing criteria');
+        }
       } else {
-        throw new Error(apiResponse.error?.message || 'Failed to load additional criteria');
+        throw new Error(additionalApiResponse.error?.message || 'Failed to load additional criteria');
       }
     } catch (error) {
-      console.error('Failed to load additional criteria:', error);
+      console.error('Failed to update criteria:', error);
       toast({
         title: "Update Function",
         description: "Additional testing criteria can be added per customer requests for specific requirements",
