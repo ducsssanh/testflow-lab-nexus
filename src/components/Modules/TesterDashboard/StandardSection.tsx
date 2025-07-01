@@ -38,19 +38,16 @@ const RequirementSection: React.FC<RequirementSectionProps> = ({
                 Requirement: {section.requirementName}
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
-                {section.sectionTitle} • {section.criteria.length} test criteria
+                {section.sectionTitle}
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="bg-blue-50">
-            {section.criteria.length} Tests
-          </Badge>
         </div>
       </CardHeader>
       
       {isExpanded && (
-        <CardContent>
-          <div className="space-y-6">
+        <CardContent className="bg-gray-50">
+          <div className="space-y-4">
             {section.criteria.map(criterion => (
               <CriterionTable
                 key={criterion.id}

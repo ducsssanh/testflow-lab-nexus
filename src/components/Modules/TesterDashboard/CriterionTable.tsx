@@ -135,8 +135,8 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
   }
 
   return (
-    <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-200 pl-4' : ''} mb-6`}>
-      <div className="border rounded-lg overflow-hidden">
+    <div className={`${level > 0 ? 'ml-6 border-l-2 border-gray-200 pl-4' : ''} mb-4`}>
+      <div className="bg-white border rounded-lg overflow-hidden shadow-sm">
         {/* Header */}
         <div className="bg-blue-50 p-4 border-b">
           <div className="flex items-center justify-between">
@@ -213,7 +213,7 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
 
       {/* Children criteria */}
       {hasChildren && isExpanded && (
-        <div className="ml-4 mt-4">
+        <div className="ml-4 mt-4 space-y-4">
           {criterion.children!.map(child => (
             <CriterionTable
               key={child.id}
