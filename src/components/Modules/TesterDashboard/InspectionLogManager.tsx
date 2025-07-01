@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Assignment, InspectionLog } from '@/types/lims';
 
@@ -7,6 +6,12 @@ interface UseInspectionLogReturn {
   setInspectionLog: (log: InspectionLog) => void;
   loadExistingLog: () => Promise<void>;
 }
+
+// Filter function to remove manufacturer field from sample info
+const filterSampleInfo = (sampleInfo: Record<string, any>): Record<string, any> => {
+  const { manufacturer, ...filteredInfo } = sampleInfo;
+  return filteredInfo;
+};
 
 export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn => {
   const [inspectionLog, setInspectionLog] = useState<InspectionLog | null>(null);
@@ -18,6 +23,8 @@ export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn
     // const response = await fetch(`/api/v1/inspection-logs?assignmentId=${assignment.id}`);
     // if (response.ok) {
     //   const existingLog = await response.json();
+    //   // Filter out manufacturer information for testers
+    //   existingLog.sampleInfo = filterSampleInfo(existingLog.sampleInfo);
     //   setInspectionLog(existingLog);
     // } else {
     //   // Create new log if none exists
@@ -34,7 +41,7 @@ export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn
         testingRequirements: assignment.testingRequirements, // Using consistent naming
         testSample: assignment.testSample,
         testingDate: new Date().toISOString().split('T')[0],
-        sampleInfo: {},
+        sampleInfo: {}, // Initialize with empty object - no manufacturer info
         testingCriteria: [], // Legacy field - will be migrated to requirementSections
         requirementSections: [], // NEW: Will be populated from API based on testingRequirements
         status: 'Draft',
@@ -46,13 +53,22 @@ export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn
     }
   };
 
+  // Override setInspectionLog to filter manufacturer info
+  const setFilteredInspectionLog = (log: InspectionLog) => {
+    const filteredLog = {
+      ...log,
+      sampleInfo: filterSampleInfo(log.sampleInfo)
+    };
+    setInspectionLog(filteredLog);
+  };
+
   useEffect(() => {
     loadExistingLog();
   }, [assignment]);
 
   return {
     inspectionLog,
-    setInspectionLog,
+    setInspectionLog: setFilteredInspectionLog,
     loadExistingLog,
   };
 };

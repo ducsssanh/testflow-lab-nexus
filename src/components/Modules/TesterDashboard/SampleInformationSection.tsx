@@ -72,16 +72,6 @@ const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
           placeholder="Testing temperature"
         />
       </div>
-      
-      <div className="md:col-span-2">
-        <Label htmlFor="manufacturer">Manufacturer</Label>
-        <Input
-          id="manufacturer"
-          value={sampleInfo.manufacturer || ''}
-          onChange={(e) => updateField('manufacturer', e.target.value)}
-          placeholder="Battery manufacturer"
-        />
-      </div>
     </div>
   );
 
