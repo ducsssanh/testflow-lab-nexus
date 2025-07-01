@@ -6,7 +6,7 @@ import SampleInformationSection from './SampleInformationSection';
 import TestingCriteriaSection from './TestingCriteriaSection';
 import TechnicalDocumentsSection from './TechnicalDocumentsSection';
 import InspectionHeader from './InspectionHeader';
-import { useStandardsData } from './StandardsDataManager';
+import { useRequirementsData } from './StandardsDataManager';
 import { useInspectionLog } from './InspectionLogManager';
 import { useInspectionActions } from './InspectionActions';
 
@@ -21,7 +21,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   onBack,
   onUpdateAssignment,
 }) => {
-  const { standardSections, setStandardSections } = useStandardsData(assignment);
+  const { requirementSections, setRequirementSections } = useRequirementsData(assignment);
   const { inspectionLog, setInspectionLog } = useInspectionLog(assignment);
   
   const {
@@ -31,7 +31,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   } = useInspectionActions({
     assignment,
     inspectionLog: inspectionLog!,
-    standardSections,
+    requirementSections,
     onUpdateAssignment,
     onUpdateInspectionLog: setInspectionLog,
   });
@@ -71,10 +71,10 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
         onUpdate={(sampleInfo) => setInspectionLog({ ...inspectionLog, sampleInfo })}
       />
 
-      {/* Section 3: Testing Criteria by Standards */}
+      {/* Section 3: Testing Criteria by Requirements */}
       <TestingCriteriaSection
-        standardSections={standardSections}
-        onUpdateStandardSections={setStandardSections}
+        requirementSections={requirementSections}
+        onUpdateRequirementSections={setRequirementSections}
       />
     </div>
   );

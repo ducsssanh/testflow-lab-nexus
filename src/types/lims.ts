@@ -1,3 +1,4 @@
+
 // Type definitions for the LIMS system
 export interface User {
   id: string;
@@ -92,9 +93,9 @@ export interface TestingAttempt {
   testerId: string;
 }
 
-export interface TestingStandardSection {
+export interface TestingRequirementSection {
   id: string;
-  standardName: string; // e.g., "QCVN101:2020"
+  requirementName: string; // e.g., "QCVN101:2020"
   sectionTitle: string; // e.g., "Electrical Safety Tests"
   criteria: TestingCriterion[];
   isExpanded?: boolean;
@@ -104,12 +105,12 @@ export interface InspectionLog {
   id: string;
   assignmentId: string;
   sampleSymbol: string;
-  testingStandards: string[];
+  testingRequirements: string[];
   testSample: string;
   testingDate: string;
   sampleInfo: Record<string, any>; // Dynamic based on sample type
   testingCriteria: TestingCriterion[];
-  standardSections: TestingStandardSection[]; // NEW: Organized by standards
+  requirementSections: TestingRequirementSection[]; // NEW: Organized by requirements
   status: 'Draft' | 'Completed';
   createdBy: string;
   createdAt: string;

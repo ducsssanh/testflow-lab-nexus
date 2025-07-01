@@ -31,12 +31,12 @@ export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn
         id: Date.now().toString(),
         assignmentId: assignment.id,
         sampleSymbol: assignment.sampleCode,
-        testingStandards: assignment.testingRequirements, // Using consistent naming
+        testingRequirements: assignment.testingRequirements, // Using consistent naming
         testSample: assignment.testSample,
         testingDate: new Date().toISOString().split('T')[0],
         sampleInfo: {},
-        testingCriteria: [], // Legacy field - will be migrated to standardSections
-        standardSections: [], // NEW: Will be populated from API based on testingRequirements
+        testingCriteria: [], // Legacy field - will be migrated to requirementSections
+        requirementSections: [], // NEW: Will be populated from API based on testingRequirements
         status: 'Draft',
         createdBy: 'current-user',
         createdAt: new Date().toISOString(),

@@ -2,29 +2,29 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FileText } from 'lucide-react';
-import { TestingStandardSection } from '@/types/lims';
-import StandardSection from './StandardSection';
+import { TestingRequirementSection } from '@/types/lims';
+import RequirementSection from './StandardSection';
 
 interface TestingCriteriaSectionProps {
-  standardSections: TestingStandardSection[];
-  onUpdateStandardSections: (sections: TestingStandardSection[]) => void;
+  requirementSections: TestingRequirementSection[];
+  onUpdateRequirementSections: (sections: TestingRequirementSection[]) => void;
 }
 
 const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
-  standardSections,
-  onUpdateStandardSections,
+  requirementSections,
+  onUpdateRequirementSections,
 }) => {
-  const [expandedStandards, setExpandedStandards] = useState<Set<string>>(new Set());
+  const [expandedRequirements, setExpandedRequirements] = useState<Set<string>>(new Set());
   const [expandedCriteria, setExpandedCriteria] = useState<Set<string>>(new Set());
 
-  const toggleStandardExpanded = (standardId: string) => {
-    const newExpanded = new Set(expandedStandards);
-    if (newExpanded.has(standardId)) {
-      newExpanded.delete(standardId);
+  const toggleRequirementExpanded = (requirementId: string) => {
+    const newExpanded = new Set(expandedRequirements);
+    if (newExpanded.has(requirementId)) {
+      newExpanded.delete(requirementId);
     } else {
-      newExpanded.add(standardId);
+      newExpanded.add(requirementId);
     }
-    setExpandedStandards(newExpanded);
+    setExpandedRequirements(newExpanded);
   };
 
   const toggleCriteriaExpanded = (criteriaId: string) => {
@@ -37,10 +37,10 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     setExpandedCriteria(newExpanded);
   };
 
-  const updateTableData = (standardId: string, criterionId: string, rowId: string, columnId: string, value: string) => {
+  const updateTableData = (requirementId: string, criterionId: string, rowId: string, columnId: string, value: string) => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual table data update endpoint
-    // PUT /api/v1/testing-criteria/${standardId}/criteria/${criterionId}/table-data
+    // PUT /api/v1/testing-criteria/${requirementId}/criteria/${criterionId}/table-data
     
     const updateCriterion = (c: any): any => {
       if (c.id === criterionId) {
@@ -73,8 +73,8 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
       return c;
     };
 
-    const updatedSections = standardSections.map(section => {
-      if (section.id === standardId) {
+    const updatedSections = requirementSections.map(section => {
+      if (section.id === requirementId) {
         return {
           ...section,
           criteria: section.criteria.map(updateCriterion)
@@ -83,7 +83,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
       return section;
     });
 
-    onUpdateStandardSections(updatedSections);
+    onUpdateRequirementSections(updatedSections);
   };
 
   return (
@@ -96,19 +96,19 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {standardSections.map(section => (
-            <StandardSection
+          {requirementSections.map(section => (
+            <RequirementSection
               key={section.id}
               section={section}
-              isExpanded={expandedStandards.has(section.id)}
+              isExpanded={expandedRequirements.has(section.id)}
               expandedCriteria={expandedCriteria}
-              onToggleStandardExpanded={toggleStandardExpanded}
+              onToggleRequirementExpanded={toggleRequirementExpanded}
               onToggleCriteriaExpanded={toggleCriteriaExpanded}
               onUpdateTableData={updateTableData}
             />
           ))}
           
-          {standardSections.length === 0 && (
+          {requirementSections.length === 0 && (
             <div className="text-center py-8 text-gray-500">
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No testing requirements loaded yet.</p>

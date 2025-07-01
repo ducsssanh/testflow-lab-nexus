@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { Assignment, InspectionLog, TestingStandardSection } from '@/types/lims';
+import { Assignment, InspectionLog, TestingRequirementSection } from '@/types/lims';
 import { useToast } from '@/hooks/use-toast';
 
 interface InspectionActionsProps {
   assignment: Assignment;
   inspectionLog: InspectionLog;
-  standardSections: TestingStandardSection[];
+  requirementSections: TestingRequirementSection[];
   onUpdateAssignment: (assignment: Assignment) => void;
   onUpdateInspectionLog: (log: InspectionLog) => void;
 }
@@ -14,7 +14,7 @@ interface InspectionActionsProps {
 export const useInspectionActions = ({
   assignment,
   inspectionLog,
-  standardSections,
+  requirementSections,
   onUpdateAssignment,
   onUpdateInspectionLog,
 }: InspectionActionsProps) => {
@@ -23,14 +23,14 @@ export const useInspectionActions = ({
   const handleUpdateCriteria = async () => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual additional criteria endpoint
-    // GET /api/v1/testing-standards/additional-criteria?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
-    // const response = await fetch(`/api/v1/testing-standards/additional-criteria?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}`);
+    // GET /api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}
+    // const response = await fetch(`/api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
     // const additionalSections = await response.json();
-    // setStandardSections(prev => [...prev, ...additionalSections]);
+    // setRequirementSections(prev => [...prev, ...additionalSections]);
 
     toast({
       title: "Update Function",
-      description: "Additional testing criteria can be added per customer requests for specific standards",
+      description: "Additional testing criteria can be added per customer requests for specific requirements",
     });
   };
 
@@ -39,7 +39,7 @@ export const useInspectionActions = ({
 
     const updatedLog: InspectionLog = {
       ...inspectionLog,
-      standardSections,
+      requirementSections,
       updatedAt: new Date().toISOString(),
     };
 
@@ -91,7 +91,7 @@ export const useInspectionActions = ({
     //     body: JSON.stringify({
     //       assignmentId: assignment.id,
     //       inspectionLogId: inspectionLog.id,
-    //       standardSections: standardSections
+    //       requirementSections: requirementSections
     //     })
     //   });
     //   const report = await response.json();

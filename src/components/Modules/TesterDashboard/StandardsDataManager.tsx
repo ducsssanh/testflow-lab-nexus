@@ -1,15 +1,15 @@
 
 import { useState, useEffect } from 'react';
-import { Assignment, TestingStandardSection, TestingCriterion, TableData, TableRowData, TableColumnDefinition } from '@/types/lims';
+import { Assignment, TestingRequirementSection, TestingCriterion, TableData, TableRowData, TableColumnDefinition } from '@/types/lims';
 
-interface UseStandardsDataReturn {
-  standardSections: TestingStandardSection[];
-  setStandardSections: (sections: TestingStandardSection[]) => void;
-  loadStandardsData: () => Promise<void>;
+interface UseRequirementsDataReturn {
+  requirementSections: TestingRequirementSection[];
+  setRequirementSections: (sections: TestingRequirementSection[]) => void;
+  loadRequirementsData: () => Promise<void>;
 }
 
-export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn => {
-  const [standardSections, setStandardSections] = useState<TestingStandardSection[]>([]);
+export const useRequirementsData = (assignment: Assignment): UseRequirementsDataReturn => {
+  const [requirementSections, setRequirementSections] = useState<TestingRequirementSection[]>([]);
 
   const generateTableData = (criterion: TestingCriterion): TableData => {
     const { rowTemplate } = criterion.tableStructure;
@@ -39,7 +39,7 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
     return { rows };
   };
 
-  const loadStandardsData = async () => {
+  const loadRequirementsData = async () => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual testing criteria loading
     // GET /api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}
@@ -47,13 +47,13 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
     try {
       // const response = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
       // const apiData = await response.json();
-      // setStandardSections(apiData.testingCriteria);
+      // setRequirementSections(apiData.testingCriteria);
 
       // Mock API response structure - organized by testing requirements
       const mockApiResponse = {
         testingCriteria: assignment.testingRequirements.map((requirement, index) => ({
           id: `requirement-${index}`,
-          standardName: requirement, // This is the testing requirement name
+          requirementName: requirement, // This is the testing requirement name
           sectionTitle: getRequirementTitle(requirement),
           criteria: getCriteriaForRequirement(requirement, assignment.sampleType)
         }))
@@ -68,7 +68,7 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
         }))
       }));
 
-      setStandardSections(processedSections);
+      setRequirementSections(processedSections);
     } catch (error) {
       console.error('Failed to load testing criteria:', error);
     }
@@ -79,7 +79,7 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
     // API_INTEGRATION: Get requirement titles from database
     const requirementTitles: Record<string, string> = {
       'QCVN101:2020': 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
-      'QCVN101:2020+IEC': 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Standards',
+      'QCVN101:2020+IEC': 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Requirements',
       'IEC62133': 'IEC 62133 - Secondary cells and batteries safety requirements',
     };
     
@@ -203,12 +203,12 @@ export const useStandardsData = (assignment: Assignment): UseStandardsDataReturn
   };
 
   useEffect(() => {
-    loadStandardsData();
+    loadRequirementsData();
   }, [assignment]);
 
   return {
-    standardSections,
-    setStandardSections,
-    loadStandardsData,
+    requirementSections,
+    setRequirementSections,
+    loadRequirementsData,
   };
 };

@@ -33,16 +33,16 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
         id: '1',
         assignmentId: 'a1',
         sampleSymbol: 'LT-001',
-        testingStandards: ['QCVN101:2020+IEC'],
+        testingRequirements: ['QCVN101:2020+IEC'],
         testSample: 'Battery Model XYZ',
         testingDate: '2024-01-15',
         sampleInfo: { voltage: '3.7V', capacity: '2000mAh' },
         testingCriteria: [],
-        standardSections: [
+        requirementSections: [
           {
-            id: 'standard-0',
-            standardName: 'QCVN101:2020+IEC',
-            sectionTitle: 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Standards',
+            id: 'requirement-0',
+            requirementName: 'QCVN101:2020+IEC',
+            sectionTitle: 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Requirements',
             isExpanded: false,
             criteria: []
           }
@@ -56,15 +56,15 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
         id: '2',
         assignmentId: 'a2',
         sampleSymbol: 'DT-002',
-        testingStandards: ['QCVN101:2020'],
+        testingRequirements: ['QCVN101:2020'],
         testSample: 'Desktop Computer ABC',
         testingDate: '2024-01-16',
         sampleInfo: { powerRating: '300W', inputVoltage: '100-240VAC' },
         testingCriteria: [],
-        standardSections: [
+        requirementSections: [
           {
-            id: 'standard-0',
-            standardName: 'QCVN101:2020',
+            id: 'requirement-0',
+            requirementName: 'QCVN101:2020',
             sectionTitle: 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
             isExpanded: false,
             criteria: []
@@ -130,11 +130,11 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
                   </div>
                   
                   <div className="pt-2">
-                    <p className="text-sm text-gray-600 mb-2">Testing Standards:</p>
+                    <p className="text-sm text-gray-600 mb-2">Testing Requirements:</p>
                     <div className="flex flex-wrap gap-2">
-                      {log.testingStandards.map((standard, index) => (
+                      {log.testingRequirements.map((requirement, index) => (
                         <Badge key={index} variant="outline" className="text-xs">
-                          {standard}
+                          {requirement}
                         </Badge>
                       ))}
                     </div>
