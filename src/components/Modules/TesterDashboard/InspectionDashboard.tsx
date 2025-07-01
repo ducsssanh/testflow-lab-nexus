@@ -1,11 +1,12 @@
 
-import React from 'react';
-import { Assignment } from '@/types/lims';
+import React, { useState } from 'react';
+import { Assignment, TechnicalDocument } from '@/types/lims';
 import OrderInformationSection from './OrderInformationSection';
 import SampleInformationSection from './SampleInformationSection';
 import TestingCriteriaSection from './TestingCriteriaSection';
 import TechnicalDocumentsSection from './TechnicalDocumentsSection';
 import InspectionHeader from './InspectionHeader';
+import DocumentViewer from '../DocumentViewer';
 import { useRequirementsData } from './StandardsDataManager';
 import { useInspectionLog } from './InspectionLogManager';
 import { useInspectionActions } from './InspectionActions';
@@ -21,6 +22,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   onBack,
   onUpdateAssignment,
 }) => {
+  const [selectedDocument, setSelectedDocument] = useState<TechnicalDocument | null>(null);
   const { requirementSections, setRequirementSections } = useRequirementsData(assignment);
   const { inspectionLog, setInspectionLog } = useInspectionLog(assignment);
   
@@ -40,6 +42,16 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
     return <div>Loading...</div>;
   }
 
+  // If a document is selected, show the document viewer
+  if (selectedDocument) {
+    return (
+      <DocumentViewer
+        document={selectedDocument}
+        onBack={() => setSelectedDocument(null)}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <InspectionHeader
@@ -54,7 +66,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
       {assignment.technicalDocumentation && (
         <TechnicalDocumentsSection
           documents={assignment.technicalDocumentation}
-          onViewDocument={(doc) => console.log('View document:', doc)}
+          onViewDocument={setSelectedDocument}
         />
       )}
 

@@ -1,4 +1,3 @@
-
 # LIMS Testing API - Sample JSON Responses
 
 This document contains sample JSON responses for all testing-related API endpoints in the LIMS system.
@@ -417,6 +416,47 @@ This document contains sample JSON responses for all testing-related API endpoin
         ]
       }
     }
+  }
+}
+```
+
+## 8. View Technical Document
+
+**Endpoint:** `GET /api/v1/documents/{documentId}/view`
+
+**Sample Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "1",
+    "name": "Battery_Specification.pdf",
+    "type": "pdf",
+    "size": 1024000,
+    "uploadedAt": "2024-01-15T08:00:00Z",
+    "uploadedBy": "reception1",
+    "url": "uploads/battery-spec.pdf",
+    "viewUrl": "https://api.example.com/documents/view/signed-url-token-12345",
+    "downloadUrl": "https://api.example.com/documents/download/signed-url-token-67890",
+    "mimeType": "application/pdf"
+  }
+}
+```
+
+**Alternative Response for Direct Content:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "1",
+    "name": "Battery_Specification.pdf",
+    "type": "pdf",
+    "size": 1024000,
+    "uploadedAt": "2024-01-15T08:00:00Z",
+    "uploadedBy": "reception1",
+    "url": "uploads/battery-spec.pdf",
+    "content": "base64-encoded-content-here",
+    "mimeType": "application/pdf"
   }
 }
 ```
