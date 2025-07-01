@@ -13,14 +13,12 @@ const TesterDashboard: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('assignments');
+  const [loading, setLoading] = useState(true);
   
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // TODO: REPLACE WITH REAL API CALL
-  // API_INTEGRATION: Replace this mock data with actual API call
-  // GET /api/v1/assignments?testerId=${userId}&teams=${userTeams}
-  // This should fetch assignments assigned to the current user's teams
+  // Mock assignments for fallback
   const mockAssignments: Assignment[] = [
     {
       id: '1',
@@ -90,59 +88,95 @@ const TesterDashboard: React.FC = () => {
   ];
 
   useEffect(() => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace mock data with actual API call
-    // const fetchAssignments = async () => {
-    //   try {
-    //     const response = await fetch(`/api/v1/assignments?teams=${user.teams.join(',')}`);
-    //     const assignments = await response.json();
-    //     setAssignments(assignments);
-    //   } catch (error) {
-    //     console.error('Failed to fetch assignments:', error);
-    //     toast({ title: "Error", description: "Failed to load assignments" });
-    //   }
-    // };
-    // fetchAssignments();
+    const fetchAssignments = async () => {
+      try {
+        setLoading(true);
+        const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team'];
+        const response = await fetch(`/api/v1/assignments?teams=${userTeams.join(',')}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const apiResponse = await response.json();
+        
+        if (apiResponse.success) {
+          setAssignments(apiResponse.data);
+        } else {
+          throw new Error(apiResponse.error?.message || 'Failed to fetch assignments');
+        }
+      } catch (error) {
+        console.error('Failed to fetch assignments:', error);
+        toast({ 
+          title: "Error", 
+          description: "Failed to load assignments. Using offline data.",
+          variant: "destructive"
+        });
+        
+        // Fallback to mock data
+        const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team'];
+        const filteredAssignments = mockAssignments.filter(assignment => 
+          userTeams.includes(assignment.assignedTeam)
+        );
+        setAssignments(filteredAssignments);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    // Filter assignments by user's teams (this logic will move to backend)
-    const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team']; // Mock user teams
-    const filteredAssignments = mockAssignments.filter(assignment => 
-      userTeams.includes(assignment.assignedTeam)
-    );
-    setAssignments(filteredAssignments);
-  }, [user]);
+    fetchAssignments();
+  }, [user, toast]);
 
   const handleSelectAssignment = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
     setViewMode('inspection');
   };
 
-  const handleUpdateAssignment = (updatedAssignment: Assignment) => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual API call to update assignment
-    // PUT /api/v1/assignments/${assignmentId}
-    // const updateAssignment = async (assignment) => {
-    //   try {
-    //     await fetch(`/api/v1/assignments/${assignment.id}`, {
-    //       method: 'PUT',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify(assignment)
-    //     });
-    //   } catch (error) {
-    //     console.error('Failed to update assignment:', error);
-    //   }
-    // };
-
-    setAssignments(prev => prev.map(a => 
-      a.id === updatedAssignment.id ? updatedAssignment : a
-    ));
-    setSelectedAssignment(updatedAssignment);
-    
-    if (updatedAssignment.status === 'Done') {
-      toast({
-        title: "Assignment Completed",
-        description: `Assignment ${updatedAssignment.sampleCode} has been marked as Done`,
+  const handleUpdateAssignment = async (updatedAssignment: Assignment) => {
+    try {
+      const response = await fetch(`/api/v1/assignments/${updatedAssignment.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: updatedAssignment.status,
+          updatedAt: updatedAssignment.updatedAt
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.success) {
+        setAssignments(prev => prev.map(a => 
+          a.id === apiResponse.data.id ? apiResponse.data : a
+        ));
+        setSelectedAssignment(apiResponse.data);
+        
+        if (apiResponse.data.status === 'Done') {
+          toast({
+            title: "Assignment Completed",
+            description: `Assignment ${apiResponse.data.sampleCode} has been marked as Done`,
+          });
+        }
+      } else {
+        throw new Error(apiResponse.error?.message || 'Failed to update assignment');
+      }
+    } catch (error) {
+      console.error('Failed to update assignment:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to update assignment. Changes saved locally.",
+        variant: "destructive"
+      });
+      
+      // Fallback to local update
+      setAssignments(prev => prev.map(a => 
+        a.id === updatedAssignment.id ? updatedAssignment : a
+      ));
+      setSelectedAssignment(updatedAssignment);
     }
   };
 
@@ -158,6 +192,17 @@ const TesterDashboard: React.FC = () => {
   const handleBackFromHistory = () => {
     setViewMode('assignments');
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Loading assignments...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (viewMode === 'history') {
     return <TestingLogHistory onBack={handleBackFromHistory} />;

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { InspectionLog } from '@/types/lims';
+import { useToast } from '@/hooks/use-toast';
 
 interface TestingLogHistoryProps {
   onBack: () => void;
@@ -12,82 +13,132 @@ interface TestingLogHistoryProps {
 
 const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
   const [logs, setLogs] = useState<InspectionLog[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace mock data with actual API call
-    // GET /api/v1/inspection-logs?testerId=current-user&status=completed
-    // const fetchTestingHistory = async () => {
-    //   try {
-    //     const response = await fetch('/api/v1/inspection-logs?testerId=current-user');
-    //     const logs = await response.json();
-    //     setLogs(logs);
-    //   } catch (error) {
-    //     console.error('Failed to fetch testing history:', error);
-    //   }
-    // };
-    // fetchTestingHistory();
+    const fetchTestingHistory = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/v1/inspection-logs?testerId=current-user');
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const apiResponse = await response.json();
+        
+        if (apiResponse.success) {
+          setLogs(apiResponse.data);
+        } else {
+          throw new Error(apiResponse.error?.message || 'Failed to fetch testing history');
+        }
+      } catch (error) {
+        console.error('Failed to fetch testing history:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load testing history. Using offline data.",
+          variant: "destructive"
+        });
+        
+        // Fallback to mock data
+        const mockLogs: InspectionLog[] = [
+          {
+            id: '1',
+            assignmentId: 'a1',
+            sampleSymbol: 'LT-001',
+            testingRequirements: ['QCVN101:2020+IEC'],
+            testSample: 'Battery Model XYZ',
+            testingDate: '2024-01-15',
+            sampleInfo: { voltage: '3.7V', capacity: '2000mAh' },
+            testingCriteria: [],
+            requirementSections: [
+              {
+                id: 'requirement-0',
+                requirementName: 'QCVN101:2020+IEC',
+                sectionTitle: 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Requirements',
+                isExpanded: false,
+                criteria: []
+              }
+            ],
+            status: 'Completed',
+            createdBy: 'current-user',
+            createdAt: '2024-01-15T09:00:00Z',
+            updatedAt: '2024-01-15T15:00:00Z',
+          },
+          {
+            id: '2',
+            assignmentId: 'a2',
+            sampleSymbol: 'DT-002',
+            testingRequirements: ['QCVN101:2020'],
+            testSample: 'Desktop Computer ABC',
+            testingDate: '2024-01-16',
+            sampleInfo: { powerRating: '300W', inputVoltage: '100-240VAC' },
+            testingCriteria: [],
+            requirementSections: [
+              {
+                id: 'requirement-0',
+                requirementName: 'QCVN101:2020',
+                sectionTitle: 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
+                isExpanded: false,
+                criteria: []
+              }
+            ],
+            status: 'Draft',
+            createdBy: 'current-user',
+            createdAt: '2024-01-16T10:00:00Z',
+            updatedAt: '2024-01-16T14:00:00Z',
+          },
+        ];
+        setLogs(mockLogs);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    const mockLogs: InspectionLog[] = [
-      {
-        id: '1',
-        assignmentId: 'a1',
-        sampleSymbol: 'LT-001',
-        testingRequirements: ['QCVN101:2020+IEC'],
-        testSample: 'Battery Model XYZ',
-        testingDate: '2024-01-15',
-        sampleInfo: { voltage: '3.7V', capacity: '2000mAh' },
-        testingCriteria: [],
-        requirementSections: [
-          {
-            id: 'requirement-0',
-            requirementName: 'QCVN101:2020+IEC',
-            sectionTitle: 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Requirements',
-            isExpanded: false,
-            criteria: []
-          }
-        ],
-        status: 'Completed',
-        createdBy: 'current-user',
-        createdAt: '2024-01-15T09:00:00Z',
-        updatedAt: '2024-01-15T15:00:00Z',
-      },
-      {
-        id: '2',
-        assignmentId: 'a2',
-        sampleSymbol: 'DT-002',
-        testingRequirements: ['QCVN101:2020'],
-        testSample: 'Desktop Computer ABC',
-        testingDate: '2024-01-16',
-        sampleInfo: { powerRating: '300W', inputVoltage: '100-240VAC' },
-        testingCriteria: [],
-        requirementSections: [
-          {
-            id: 'requirement-0',
-            requirementName: 'QCVN101:2020',
-            sectionTitle: 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
-            isExpanded: false,
-            criteria: []
-          }
-        ],
-        status: 'Draft',
-        createdBy: 'current-user',
-        createdAt: '2024-01-16T10:00:00Z',
-        updatedAt: '2024-01-16T14:00:00Z',
-      },
-    ];
-    setLogs(mockLogs);
-  }, []);
+    fetchTestingHistory();
+  }, [toast]);
 
   const handleViewDetails = async (logId: string) => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual log detail viewing
-    // This could navigate to a detailed view or open a modal
-    // const response = await fetch(`/api/v1/inspection-logs/${logId}/details`);
-    // const logDetails = await response.json();
-    // Navigate to detail view or open modal with logDetails
-    console.log('View log details for:', logId);
+    try {
+      const response = await fetch(`/api/v1/inspection-logs/${logId}/details`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const apiResponse = await response.json();
+      
+      if (apiResponse.success) {
+        // Navigate to detail view or open modal with apiResponse.data
+        console.log('Log details:', apiResponse.data);
+        toast({
+          title: "Log Details",
+          description: "Opening detailed view for inspection log",
+        });
+      } else {
+        throw new Error(apiResponse.error?.message || 'Failed to load log details');
+      }
+    } catch (error) {
+      console.error('Failed to load log details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load log details",
+        variant: "destructive"
+      });
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p>Loading testing history...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
