@@ -24,8 +24,10 @@ export const useInspectionActions = ({
 
   const handleUpdateCriteria = async () => {
     try {
+      const subTypeParam = assignment.sampleSubType ? `&sampleSubType=${assignment.sampleSubType}` : '';
+      
       // First, get additional criteria
-      const additionalResponse = await fetch(`/api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
+      const additionalResponse = await fetch(`/api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}${subTypeParam}`);
       
       if (!additionalResponse.ok) {
         throw new Error(`HTTP error! status: ${additionalResponse.status}`);
@@ -42,7 +44,7 @@ export const useInspectionActions = ({
         // Now query the complete testing criteria with the updated requirements
         const allRequirements = [...assignment.testingRequirements, ...additionalSections.map((s: TestingRequirementSection) => s.requirementName)];
         
-        const criteriaResponse = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${allRequirements.join(',')}`);
+        const criteriaResponse = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${allRequirements.join(',')}${subTypeParam}`);
         
         if (!criteriaResponse.ok) {
           throw new Error(`HTTP error! status: ${criteriaResponse.status}`);

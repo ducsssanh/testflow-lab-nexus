@@ -42,10 +42,11 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
   const loadRequirementsData = async () => {
     // TODO: REPLACE WITH REAL API CALL
     // API_INTEGRATION: Replace with actual testing criteria loading
-    // GET /api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}
+    // GET /api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}&sampleSubType=${assignment.sampleSubType}
     
     try {
-      // const response = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}`);
+      const subTypeParam = assignment.sampleSubType ? `&sampleSubType=${assignment.sampleSubType}` : '';
+      // const response = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}${subTypeParam}`);
       // const apiData = await response.json();
       // setRequirementSections(apiData.testingCriteria);
 
@@ -55,7 +56,7 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
           id: `requirement-${index}`,
           requirementName: requirement, // This is the testing requirement name
           sectionTitle: getRequirementTitle(requirement),
-          criteria: getCriteriaForRequirement(requirement, assignment.sampleType)
+          criteria: getCriteriaForRequirement(requirement, assignment.sampleType, assignment.sampleSubType)
         }))
       };
 
@@ -86,11 +87,11 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
     return requirementTitles[requirement] || `${requirement} Testing Requirements`;
   };
 
-  const getCriteriaForRequirement = (requirement: string, sampleType: string): TestingCriterion[] => {
+  const getCriteriaForRequirement = (requirement: string, sampleType: string, sampleSubType?: string): TestingCriterion[] => {
     // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Get criteria based on requirement and sample type from database
+    // API_INTEGRATION: Get criteria based on requirement, sample type, and sample sub type from database
     
-    // Mock criteria based on requirement and sample type
+    // Mock criteria based on requirement, sample type, and sample sub type
     const baseCriteria = [
       {
         id: `${requirement}-continuous-charge`,
@@ -148,55 +149,105 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
       }
     ];
 
-    // Add sample-type specific criteria
+    // Add sample-type and sub-type specific criteria
     if (sampleType === 'Lithium Battery') {
-      baseCriteria.push({
-        id: `${requirement}-capacity-test`,
-        name: 'Capacity discharge test',
-        sectionNumber: '2.6.1.2/7.2.2',
-        tableStructure: {
-          columns: [
-            { 
-              id: 'model', 
-              header: 'Model', 
-              type: 'readonly' as const
-            },
-            { 
-              id: 'capacity', 
-              header: 'Measured Capacity (mAh)', 
-              type: 'number' as const,
-              unit: 'mAh',
-              placeholder: 'Enter capacity'
-            },
-            { 
-              id: 'discharge_time', 
-              header: 'Discharge Time (hrs)', 
-              type: 'number' as const,
-              unit: 'hrs',
-              placeholder: 'Enter time'
-            },
-            { 
-              id: 'results', 
-              header: 'Results', 
-              type: 'select' as const, 
-              options: ['Pass', 'Fail', 'N/A'],
-              default: 'N/A'
+      if (sampleSubType === 'Cell') {
+        baseCriteria.push({
+          id: `${requirement}-cell-capacity-test`,
+          name: 'Cell capacity discharge test',
+          sectionNumber: '2.6.1.2/7.2.2',
+          tableStructure: {
+            columns: [
+              { 
+                id: 'model', 
+                header: 'Model', 
+                type: 'readonly' as const
+              },
+              { 
+                id: 'capacity', 
+                header: 'Measured Capacity (mAh)', 
+                type: 'number' as const,
+                unit: 'mAh',
+                placeholder: 'Enter capacity'
+              },
+              { 
+                id: 'discharge_time', 
+                header: 'Discharge Time (hrs)', 
+                type: 'number' as const,
+                unit: 'hrs',
+                placeholder: 'Enter time'
+              },
+              { 
+                id: 'results', 
+                header: 'Results', 
+                type: 'select' as const, 
+                options: ['Pass', 'Fail', 'N/A'],
+                default: 'N/A'
+              }
+            ] as TableColumnDefinition[],
+            rowTemplate: {
+              modelPrefix: 'C#',
+              modelCount: 5
             }
-          ] as TableColumnDefinition[],
-          rowTemplate: {
-            modelPrefix: 'C#',
-            modelCount: 5
+          },
+          result: null,
+          supplementaryInfo: {
+            defaultNotes: ['No fire, no explosion, no leakage'],
+            notes: ['No fire, no explosion, no leakage'],
+            testingTime: '',
+            tester: '',
+            equipment: 'PSI.TB-'
           }
-        },
-        result: null,
-        supplementaryInfo: {
-          defaultNotes: ['No fire, no explosion, no leakage'],
-          notes: ['No fire, no explosion, no leakage'],
-          testingTime: '',
-          tester: '',
-          equipment: 'PSI.TB-'
-        }
-      });
+        });
+      } else if (sampleSubType === 'Pack') {
+        baseCriteria.push({
+          id: `${requirement}-pack-integration-test`,
+          name: 'Pack integration and BMS test',
+          sectionNumber: '2.6.1.3/7.2.3',
+          tableStructure: {
+            columns: [
+              { 
+                id: 'model', 
+                header: 'Model', 
+                type: 'readonly' as const
+              },
+              { 
+                id: 'pack_voltage', 
+                header: 'Pack Voltage (V)', 
+                type: 'number' as const,
+                unit: 'V',
+                placeholder: 'Enter pack voltage'
+              },
+              { 
+                id: 'bms_status', 
+                header: 'BMS Status', 
+                type: 'select' as const,
+                options: ['Normal', 'Alert', 'Fault'],
+                default: 'Normal'
+              },
+              { 
+                id: 'results', 
+                header: 'Results', 
+                type: 'select' as const, 
+                options: ['Pass', 'Fail', 'N/A'],
+                default: 'N/A'
+              }
+            ] as TableColumnDefinition[],
+            rowTemplate: {
+              modelPrefix: 'P#',
+              modelCount: 3
+            }
+          },
+          result: null,
+          supplementaryInfo: {
+            defaultNotes: ['BMS functioning properly', 'No pack imbalance'],
+            notes: ['BMS functioning properly', 'No pack imbalance'],
+            testingTime: '',
+            tester: '',
+            equipment: 'PSI.TB-'
+          }
+        });
+      }
     }
 
     return baseCriteria as TestingCriterion[];
