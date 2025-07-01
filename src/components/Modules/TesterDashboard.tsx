@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Assignment } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,7 +17,7 @@ const TesterDashboard: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Mock assignments for fallback
+  // Mock assignments for fallback - using team IDs
   const mockAssignments: Assignment[] = [
     {
       id: '1',
@@ -40,7 +39,7 @@ const TesterDashboard: React.FC = () => {
         }
       ],
       status: 'Pending',
-      assignedTeam: 'Battery Testing Team',
+      assignedTeam: '101',
       assignedBy: 'manager1',
       testSample: 'Li-ion Cell Model ABC123',
       createdAt: '2024-01-15T09:00:00Z',
@@ -65,7 +64,7 @@ const TesterDashboard: React.FC = () => {
         }
       ],
       status: 'In Progress',
-      assignedTeam: 'IT Equipment Team',
+      assignedTeam: '102',
       assignedBy: 'manager1',
       testSample: 'Desktop Computer XYZ789',
       createdAt: '2024-01-16T10:00:00Z',
@@ -79,7 +78,7 @@ const TesterDashboard: React.FC = () => {
       testingRequirements: ['QCVN101:2020'],
       receivedTime: '2024-01-17T11:00:00Z',
       status: 'Pending',
-      assignedTeam: 'IT Equipment Team',
+      assignedTeam: '102',
       assignedBy: 'manager1',
       testSample: 'Power Adapter 65W',
       createdAt: '2024-01-17T11:00:00Z',
@@ -91,7 +90,7 @@ const TesterDashboard: React.FC = () => {
     const fetchAssignments = async () => {
       try {
         setLoading(true);
-        const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team'];
+        const userTeams = user?.teams || ['101', '102'];
         const response = await fetch(`/api/v1/assignments?teams=${userTeams.join(',')}`);
         
         if (!response.ok) {
@@ -114,7 +113,7 @@ const TesterDashboard: React.FC = () => {
         });
         
         // Fallback to mock data
-        const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team'];
+        const userTeams = user?.teams || ['101', '102'];
         const filteredAssignments = mockAssignments.filter(assignment => 
           userTeams.includes(assignment.assignedTeam)
         );
