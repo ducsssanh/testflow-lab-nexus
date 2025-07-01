@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,6 +18,11 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
   const { toast } = useToast();
 
   const handleViewDocument = async (document: TechnicalDocument) => {
+    const loadingToast = toast({
+      title: "Loading Document",
+      description: "Retrieving document from database...",
+    });
+
     try {
       const response = await fetch(`/api/v1/documents/${document.id}/view`);
       
@@ -31,12 +35,8 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
       if (apiResponse.success) {
         const documentData = apiResponse.data;
         
-        // If we have a viewUrl, open it in a new tab
-        if (documentData.viewUrl) {
-          window.open(documentData.viewUrl, '_blank');
-        } 
-        // If we have base64 content, create a blob and open it
-        else if (documentData.content) {
+        // For database-stored documents, expect base64 content
+        if (documentData.content && documentData.mimeType) {
           const byteCharacters = atob(documentData.content);
           const byteNumbers = new Array(byteCharacters.length);
           for (let i = 0; i < byteCharacters.length; i++) {
@@ -45,20 +45,25 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
           const byteArray = new Uint8Array(byteNumbers);
           const blob = new Blob([byteArray], { type: documentData.mimeType });
           const url = URL.createObjectURL(blob);
+          
+          // Open in new tab
           window.open(url, '_blank');
           
           // Clean up the URL after a delay
           setTimeout(() => URL.revokeObjectURL(url), 1000);
-        }
-        // Fallback to using the document viewer component
-        else {
+          
+          toast({
+            title: "Document Opened",
+            description: `${document.name} has been opened for viewing`,
+          });
+        } else {
+          // Fallback to document viewer component if no content
           onViewDocument(document);
+          toast({
+            title: "Document Viewer",
+            description: `Opening ${document.name} in document viewer`,
+          });
         }
-        
-        toast({
-          title: "Document Opened",
-          description: `${document.name} has been opened for viewing`,
-        });
       } else {
         throw new Error(apiResponse.error?.message || 'Failed to load document');
       }
@@ -66,7 +71,7 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
       console.error('Failed to load document:', error);
       toast({
         title: "Error",
-        description: "Failed to load document. Opening in document viewer.",
+        description: "Failed to retrieve document from database",
         variant: "destructive"
       });
       
