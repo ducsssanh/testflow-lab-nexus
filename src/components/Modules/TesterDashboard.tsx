@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from 'react';
 import { Assignment } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,6 +9,14 @@ import InspectionDashboard from './TesterDashboard/InspectionDashboard';
 import TestingLogHistory from './TesterDashboard/TestingLogHistory';
 
 type ViewMode = 'assignments' | 'inspection' | 'history';
+
+// Type cho API response theo schema thực tế
+interface ApiResponse {
+  status: string;
+  data: {
+    assignments: any[];
+  };
+}
 
 const TesterDashboard: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
@@ -25,7 +34,6 @@ const TesterDashboard: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
-        // Debug: Log user object
         console.log('User object:', user);
         
         if (!user) {
@@ -73,7 +81,7 @@ const TesterDashboard: React.FC = () => {
               throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
             
-            const data = await response.json();
+            const data: ApiResponse = await response.json();
             console.log(`Team ${teamId} data:`, data);
             
             return data;
@@ -86,16 +94,20 @@ const TesterDashboard: React.FC = () => {
         const results = await Promise.all(fetchPromises);
         console.log('All API results:', results);
 
-        // Xử lý kết quả - cần flexible với cấu trúc response
+        // Xử lý kết quả với cấu trúc API response đúng
         const allAssignments = results
           .flatMap(result => {
-            // Xử lý linh hoạt cấu trúc response
-            if (Array.isArray(result)) {
+            console.log('Processing API result:', result);
+            
+            // Kiểm tra cấu trúc response mới: { status: "success", data: { assignments: [...] } }
+            if (result.status === 'success' && result.data && Array.isArray(result.data.assignments)) {
+              return result.data.assignments;
+            }
+            // Fallback cho cấu trúc khác
+            else if (result.data.assignments && Array.isArray(result.data.assignments)) {
+              return result.data.assignments;
+            } else if (Array.isArray(result)) {
               return result;
-            } else if (result.assignments && Array.isArray(result.assignments)) {
-              return result.assignments;
-            } else if (result.data && Array.isArray(result.data)) {
-              return result.data;
             } else {
               console.warn('Unexpected response structure:', result);
               return [];
@@ -103,7 +115,10 @@ const TesterDashboard: React.FC = () => {
           })
           .map(assignment => {
             try {
-              return mapApiToAssignment(assignment);
+              console.log('Mapping assignment:', assignment);
+              const mappedAssignment = mapApiToAssignment(assignment);
+              console.log('Mapped assignment:', mappedAssignment);
+              return mappedAssignment;
             } catch (error) {
               console.error('Failed to map assignment:', assignment, error);
               return null;
@@ -111,13 +126,18 @@ const TesterDashboard: React.FC = () => {
           })
           .filter(assignment => assignment !== null) as Assignment[];
 
-        console.log('Processed assignments:', allAssignments);
+        console.log('Final processed assignments:', allAssignments);
         setAssignments(allAssignments);
 
         if (allAssignments.length === 0) {
           toast({
             title: "No Assignments",
             description: "No assignments found for your teams.",
+          });
+        } else {
+          toast({
+            title: "Assignments Loaded",
+            description: `Found ${allAssignments.length} assignments.`,
           });
         }
 
@@ -141,7 +161,6 @@ const TesterDashboard: React.FC = () => {
     setSelectedAssignment(assignment);
     setViewMode('inspection');
   };
-
 
   const handleUpdateAssignment = async (updatedAssignment: Assignment) => {
     try {

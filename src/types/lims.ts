@@ -94,15 +94,10 @@ export interface TestingAttempt {
   testerId: number | string;
 }
 
-<<<<<<< HEAD
-export interface TestingStandardSection {
-  id: number | string;
-  standardName: string; // e.g., "QCVN101:2020"
-=======
+
 export interface TestingRequirementSection {
   id: string;
   requirementName: string; // e.g., "QCVN101:2020"
->>>>>>> 981959642012cc71df782b81bb2d755444202bb2
   sectionTitle: string; // e.g., "Electrical Safety Tests"
   criteria: TestingCriterion[];
   isExpanded?: boolean;

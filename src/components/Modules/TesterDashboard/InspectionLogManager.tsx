@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react';
 import { Assignment, InspectionLog } from '@/types/lims';
@@ -26,7 +27,13 @@ export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn
       setLoading(true);
       setError(null);
       
-      const response = await fetch(`/api/v1/inspection-logs?assignmentId=${assignment.id}`);
+      const response = await fetch(`/api/inspection-logs?assignmentId=${assignment.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('limsToken')}`,
+        },
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

@@ -1,40 +1,136 @@
-import { Assignment } from '@/types/lims';
+import { Assignment } from "@/types/lims";
 
-// Định nghĩa một kiểu dữ liệu cho đối tượng assignment nhận về từ API
-// để đảm bảo an toàn kiểu trong hàm mapper
-type ApiAssignment = {
+// Định nghĩa kiểu dữ liệu cho API response theo schema thực tế
+type ApiAssignmentResponse = {
   id: number;
+  teamAssignmentId: number;
+  sampleId: number;
+  testerId: number;
   status: string;
+  assignedAt: string;
+  startedAt: string | null;
+  completedAt: string | null;
+  notes: string | null;
   createdAt: string;
   updatedAt: string;
-  tester: {
+  teamAssignment: {
     id: number;
-    name: string;
-    email: string;
+    createdAt: string;
+    updatedAt: string;
+    assignedByName: string;
   };
   sample: {
     id: number;
+    orderId: number;
+    customerId: number;
+    productTypeId: number;
     sampleName: string;
+    barcode: string;
+    sampleCode: string | null;
+    sampleType: string;
+    quantity: number;
+    modelName: string;
+    testStandards: string;
+    technicalDocs: string | null;
+    receivedAt: string;
+    createdAt: string;
+    updatedAt: string;
   };
-  teamAssignment: {
-    id: number;
-    teamId: number;
-  };
-  results: Array<{
-    id: number;
-    status: string;
-  }>;
 };
 
-// HÀM PLACEHOLDER: Lấy tên team từ teamId.
-// Trong thực tế, bạn có thể cần gọi một API khác hoặc lấy từ một state quản lý team.
+// Map status từ API sang Frontend
+const mapStatusFromApi = (apiStatus: string): Assignment["status"] => {
+  switch (apiStatus) {
+    case "ASSIGNED":
+      return "Pending";
+    case "IN_PROGRESS":
+      return "In Progress";
+    case "COMPLETED":
+      return "Done";
+    default:
+      return "Pending";
+  }
+};
+
+// Map sample type từ API sang Frontend
+const mapSampleTypeFromApi = (
+  sampleType: string,
+  sampleName: string
+): Assignment["sampleType"] => {
+  // Ưu tiên sampleType từ API trước
+  if (sampleType.toLowerCase().includes("lithium")) {
+    return "Lithium Battery";
+  }
+
+  // Fallback dựa trên sampleName
+  const name = sampleName.toLowerCase();
+  if (
+    name.includes("pin") ||
+    name.includes("battery") ||
+    name.includes("lithium")
+  ) {
+    return "Lithium Battery";
+  } else if (name.includes("adapter")) {
+    return "ITAV Adapter";
+  } else if (name.includes("desktop")) {
+    return "ITAV Desktop";
+  } else if (name.includes("laptop") || name.includes("tablet")) {
+    return "ITAV Laptop+Tablet";
+  } else if (name.includes("tv")) {
+    return "ITAV TV";
+  } else {
+    return "Lithium Battery"; // Default fallback
+  }
+};
+
+// Parse testing requirements từ testStandards
+const parseTestingRequirements = (testStandards: string): string[] => {
+  if (!testStandards) return ["General Testing Standards"];
+
+  // Split by common delimiters
+  const requirements = testStandards
+    .split(/[,+&;]/)
+    .map((req) => req.trim())
+    .filter((req) => req);
+
+  return requirements.length > 0 ? requirements : ["General Testing Standards"];
+};
+
+// Map sample sub-type cho battery
+const mapSampleSubType = (
+  sampleType: string,
+  sampleName: string
+): Assignment["sampleSubType"] => {
+  if (
+    sampleType.toLowerCase().includes("lithium") ||
+    sampleName.toLowerCase().includes("pin")
+  ) {
+    const name = sampleName.toLowerCase();
+
+    // Kiểm tra cả cell và pack trước
+    if (name.includes("cell") && name.includes("pack")) {
+      return "Cell+Pack";
+    } else if (name.includes("pack")) {
+      return "Pack";
+    } else if (name.includes("cell")) {
+      return "Cell";
+    }
+
+    // Default cho battery
+    return "Cell";
+  }
+  return undefined;
+};
+
+// HÀM PLACEHOLDER: Lấy tên team từ teamId
 const getTeamNameById = (teamId: number): string => {
   const teamMap: Record<number, string> = {
-    1: 'Battery Testing Team', // ID giả định
-    2: 'IT Equipment Team',     // ID giả định
+    1: "101",
+    2: "102",
+    3: "103",
     // Thêm các team khác ở đây
   };
-  return teamMap[teamId] || `Unknown Team (ID: ${teamId})`;
+  return teamMap[teamId] || teamId.toString();
 };
 
 /**
@@ -42,27 +138,39 @@ const getTeamNameById = (teamId: number): string => {
  * @param apiAssignment - Đối tượng dữ liệu từ API response.
  * @returns - Một đối tượng có cấu trúc tuân thủ interface Assignment.
  */
-export const mapApiToAssignment = (apiAssignment: ApiAssignment): Assignment => {
+export const mapApiToAssignment = (
+  apiAssignment: ApiAssignmentResponse
+): Assignment => {
+  const testingRequirements = parseTestingRequirements(
+    apiAssignment.sample.testStandards
+  );
+
   return {
-    // === Các trường có thể map trực tiếp hoặc qua xử lý nhỏ ===
+    // === Mapping từ API response ===
     id: apiAssignment.id.toString(),
-    status: apiAssignment.status as 'Pending' | 'In Progress' | 'Done',
-    testSample: apiAssignment.sample.sampleName,
-    assignedTeam: getTeamNameById(apiAssignment.teamAssignment.teamId),
-    assignedBy: apiAssignment.tester.name, // Map tên của tester vào assignedBy
-    receivedTime: apiAssignment.createdAt,
+    status: mapStatusFromApi(apiAssignment.status),
+    sampleCode:
+      apiAssignment.sample.barcode ||
+      `SAMPLE-${apiAssignment.sample.id.toString().padStart(3, "0")}`,
+    sampleType: mapSampleTypeFromApi(
+      apiAssignment.sample.sampleType,
+      apiAssignment.sample.sampleName
+    ),
+    sampleSubType: mapSampleSubType(
+      apiAssignment.sample.sampleType,
+      apiAssignment.sample.sampleName
+    ),
+    sampleQuantity: apiAssignment.sample.quantity,
+    testingRequirements: testingRequirements,
+    testSample:
+      apiAssignment.sample.modelName || apiAssignment.sample.sampleName,
+    receivedTime: apiAssignment.sample.receivedAt,
+    assignedTeam: getTeamNameById(apiAssignment.teamAssignmentId), // Cần điều chỉnh logic này
+    assignedBy: apiAssignment.teamAssignment.assignedByName,
     createdAt: apiAssignment.createdAt,
     updatedAt: apiAssignment.updatedAt,
 
-    // === CÁC TRƯỜNG BỊ THIẾU TỪ API ===
-    // Ghi chú: Các trường dưới đây không có trong API response bạn cung cấp.
-    // Chúng cần được backend bổ sung để UI hiển thị đầy đủ và chính xác.
-    // Hiện tại, chúng ta sẽ dùng các giá trị mặc định (placeholder).
-    sampleCode: `SAMPLE-${apiAssignment.sample.id}`, // Dùng tạm sampleId
-    sampleType: 'ITAV Desktop', // Giá trị tạm thời
-    sampleSubType: undefined, // Giá trị tạm thời
-    sampleQuantity: 1, // Giá trị tạm thời
-    testingRequirements: ['QCVN-from-API'], // Giá trị tạm thời
-    technicalDocumentation: [], // Giá trị tạm thời
+    // === Các trường không có trong API, sử dụng placeholder ===
+    technicalDocumentation: [], // Có thể thêm sau nếu cần
   };
 };
