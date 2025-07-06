@@ -23,7 +23,7 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files || !user) return;
 
@@ -35,14 +35,14 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
 
     const newDocuments: TechnicalDocument[] = [];
 
-    Array.from(files).forEach((file) => {
+    for (const file of Array.from(files)) {
       if (!allowedTypes.includes(file.type)) {
         toast({
           title: "Lỗi định dạng file",
           description: `File ${file.name} không được hỗ trợ. Chỉ chấp nhận PDF, DOC, DOCX.`,
           variant: "destructive",
         });
-        return;
+        continue;
       }
 
       if (file.size > 10 * 1024 * 1024) { // 10MB limit
@@ -51,25 +51,44 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
           description: `File ${file.name} vượt quá giới hạn 10MB.`,
           variant: "destructive",
         });
-        return;
+        continue;
       }
 
-      // In a real implementation, you would upload to a file storage service
-      // For now, we'll create a mock URL
-      const mockUrl = `uploads/${Date.now()}-${file.name}`;
+      try {
+        // Upload file to storage service
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const uploadResponse = await fetch('/api/v1/documents/upload', {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to upload file');
+        }
+        
+        const uploadResult = await uploadResponse.json();
+        
+        const document: TechnicalDocument = {
+          id: uploadResult.id || (Date.now().toString() + Math.random().toString(36).substr(2, 9)),
+          name: file.name,
+          type: file.type.includes('pdf') ? 'pdf' : file.type.includes('word') ? 'doc' : 'docx',
+          size: file.size,
+          uploadedAt: new Date().toISOString(),
+          uploadedBy: user.id.toString(),
+          url: uploadResult.url,
+        };
 
-      const document: TechnicalDocument = {
-        id: Date.now().toString() + Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        type: file.type.includes('pdf') ? 'pdf' : file.type.includes('word') ? 'doc' : 'docx',
-        size: file.size,
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: user.id.toString(),
-        url: mockUrl,
-      };
-
-      newDocuments.push(document);
-    });
+        newDocuments.push(document);
+      } catch (error) {
+        toast({
+          title: "Lỗi tải lên",
+          description: `Không thể tải lên file ${file.name}`,
+          variant: "destructive",
+        });
+      }
+    }
 
     if (newDocuments.length > 0) {
       onDocumentsChange([...documents, ...newDocuments]);

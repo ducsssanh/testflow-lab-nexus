@@ -30,66 +30,28 @@ const OrderManagement: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // Mock data - replace with API calls
-  const mockTestTemplates: TestTemplate[] = [
-    {
-      id: '1',
-      sampleType: 'Pin Lithium',
-      availableTests: [
-        { id: 't1', name: 'UN38.3 Test Summary', unit: '', category: 'Safety', price: 2500000 },
-        { id: 't2', name: 'Altitude Simulation', unit: 'm', category: 'Environmental', price: 1500000 },
-        { id: 't3', name: 'Thermal Test', unit: '°C', category: 'Environmental', price: 1200000 },
-      ],
-    },
-    {
-      id: '2',
-      sampleType: 'Desktop',
-      availableTests: [
-        { id: 't4', name: 'EMC Conducted Emission', unit: 'dBμV', category: 'EMC', price: 3000000 },
-        { id: 't5', name: 'Safety - Insulation', unit: 'MΩ', category: 'Safety', price: 800000 },
-        { id: 't6', name: 'Energy Efficiency', unit: 'W', category: 'Performance', price: 1000000 },
-      ],
-    },
-  ];
-
-  // Create a mock PDF document for testing
-  const createMockPDFDocument = (): TechnicalDocument => ({
-    id: 'mock-pdf-' + Date.now(),
-    name: 'Sample_Technical_Specification.pdf',
-    type: 'pdf',
-    size: 2048000, // 2MB
-    uploadedAt: new Date().toISOString(),
-    uploadedBy: user?.id?.toString() || 'system',
-    url: 'uploads/mock-sample-tech-spec.pdf',
-  });
-
-  const mockOrders: Order[] = [
-    {
-      id: '1',
-      sampleId: 'LT-001',
-      sampleName: 'Laptop Gaming XYZ',
-      sampleType: 'Desktop',
-      manufacturer: 'Tech Corp',
-      dateReceived: '2024-01-15',
-      quantity: 2,
-      notes: 'Sample cần kiểm tra khẩn cấp',
-      status: 'pending',
-      assignedTests: ['t4', 't5'],
-      createdBy: 'reception1',
-      createdAt: '2024-01-15T09:00:00Z',
-      updatedAt: '2024-01-15T09:00:00Z',
-      technicalDocuments: [createMockPDFDocument()], // Add mock PDF for testing
-    },
-  ];
-
   useEffect(() => {
-    // API_INTEGRATION: Call GET /api/v1/orders to fetch all orders
-    // API_INTEGRATION: Expects response: Order[]
-    setOrders(mockOrders);
+    const fetchData = async () => {
+      try {
+        // Fetch orders
+        const ordersResponse = await fetch('/api/v1/orders');
+        if (ordersResponse.ok) {
+          const ordersData = await ordersResponse.json();
+          setOrders(ordersData);
+        }
+        
+        // Fetch test templates  
+        const templatesResponse = await fetch('/api/v1/test-templates');
+        if (templatesResponse.ok) {
+          const templatesData = await templatesResponse.json();
+          setTestTemplates(templatesData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
     
-    // API_INTEGRATION: Call GET /api/v1/test-templates to fetch all test templates
-    // API_INTEGRATION: Expects response: TestTemplate[]
-    setTestTemplates(mockTestTemplates);
+    fetchData();
   }, []);
 
   const generateSampleId = () => {

@@ -37,60 +37,11 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
         console.error('Failed to fetch testing history:', error);
         toast({
           title: "Error",
-          description: "Failed to load testing history. Using offline data.",
+          description: "Failed to load testing logs",
           variant: "destructive"
         });
         
-        // Fallback to mock data
-        const mockLogs: InspectionLog[] = [
-          {
-            id: '1',
-            assignmentId: 'a1',
-            sampleSymbol: 'LT-001',
-            testingRequirements: ['QCVN101:2020+IEC'],
-            testSample: 'Battery Model XYZ',
-            testingDate: '2024-01-15',
-            sampleInfo: { voltage: '3.7V', capacity: '2000mAh' },
-            testingCriteria: [],
-            requirementSections: [
-              {
-                id: 'requirement-0',
-                requirementName: 'QCVN101:2020+IEC',
-                sectionTitle: 'QCVN101:2020 with IEC 62133-2:2017 Battery Safety Requirements',
-                isExpanded: false,
-                criteria: []
-              }
-            ],
-            status: 'Completed',
-            createdBy: 'current-user',
-            createdAt: '2024-01-15T09:00:00Z',
-            updatedAt: '2024-01-15T15:00:00Z',
-          },
-          {
-            id: '2',
-            assignmentId: 'a2',
-            sampleSymbol: 'DT-002',
-            testingRequirements: ['QCVN101:2020'],
-            testSample: 'Desktop Computer ABC',
-            testingDate: '2024-01-16',
-            sampleInfo: { powerRating: '300W', inputVoltage: '100-240VAC' },
-            testingCriteria: [],
-            requirementSections: [
-              {
-                id: 'requirement-0',
-                requirementName: 'QCVN101:2020',
-                sectionTitle: 'National Technical Regulation on Safety Requirements for Information Technology Equipment',
-                isExpanded: false,
-                criteria: []
-              }
-            ],
-            status: 'Draft',
-            createdBy: 'current-user',
-            createdAt: '2024-01-16T10:00:00Z',
-            updatedAt: '2024-01-16T14:00:00Z',
-          },
-        ];
-        setLogs(mockLogs);
+        setLogs([]);
       } finally {
         setLoading(false);
       }

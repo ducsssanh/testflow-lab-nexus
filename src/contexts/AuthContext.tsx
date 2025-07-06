@@ -23,34 +23,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Mock users for development - replace with API call
-  const mockUsers: User[] = [
-    {
-      id: '1',
-      username: 'reception1',
-      fullName: 'Nguyễn Thị Thu',
-      role: 'reception',
-      email: 'reception@lab.com',
-      isActive: true,
-    },
-    {
-      id: '2',
-      username: 'tester1',
-      fullName: 'Trần Văn Nam',
-      role: 'TESTER',
-      email: 'tester@lab.com',
-      isActive: true,
-    },
-    {
-      id: '3',
-      username: 'manager1',
-      fullName: 'Lê Thị Hoa',
-      role: 'manager',
-      email: 'manager@lab.com',
-      isActive: true,
-    },
-  ];
-
   useEffect(() => {
     // Check for existing session
     const savedUser = localStorage.getItem('limsUser');
