@@ -6,7 +6,7 @@ import SampleInformationSection from './SampleInformationSection';
 import TestingCriteriaSection from './TestingCriteriaSection';
 import TechnicalDocumentsSection from './TechnicalDocumentsSection';
 import InspectionHeader from './InspectionHeader';
-import DocumentViewer from '../DocumentViewer';
+import DocumentViewer from '../shared/DocumentViewer';
 import { useRequirementsData } from './StandardsDataManager';
 import { useInspectionLog } from './InspectionLogManager';
 import { useInspectionActions } from './InspectionActions';
@@ -15,12 +15,14 @@ interface InspectionDashboardProps {
   assignment: Assignment;
   onBack: () => void;
   onUpdateAssignment: (assignment: Assignment) => void;
+  onViewDocument?: (document: TechnicalDocument) => void;
 }
 
 const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   assignment,
   onBack,
   onUpdateAssignment,
+  onViewDocument,
 }) => {
   const [selectedDocument, setSelectedDocument] = useState<TechnicalDocument | null>(null);
   const { requirementSections, setRequirementSections } = useRequirementsData(assignment);
@@ -67,7 +69,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
       {assignment.technicalDocumentation && (
         <TechnicalDocumentsSection
           documents={assignment.technicalDocumentation}
-          onViewDocument={setSelectedDocument}
+          onViewDocument={onViewDocument || setSelectedDocument}
         />
       )}
 

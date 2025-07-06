@@ -1,27 +1,29 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import LoginForm from '@/components/Auth/LoginForm';
-import Header from '@/components/Layout/Header';
-import Sidebar from '@/components/Layout/Sidebar';
-import OrderManagement from '@/components/Modules/OrderManagement';
-import TesterDashboard from '@/components/Modules/TesterDashboard';
+import { useNavigate } from 'react-router-dom';
+import LoginForm from '@/components/shared/Auth/LoginForm';
+import Header from '@/components/shared/Layout/Header';
+import Sidebar from '@/components/shared/Layout/Sidebar';
+import OrderManagement from '@/pages/manager/OrderManagement';
 
 const Index = () => {
   const { user, isLoading } = useAuth();
   const [activeModule, setActiveModule] = useState('orders');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const navigate = useNavigate();
 
   // Move useEffect before any conditional returns to fix hook order violation
   useEffect(() => {
     if (user?.role === 'TESTER') {
-      setActiveModule('testing');
+      navigate('/tester/dashboard');
+      return;
     } else if (user?.role === 'manager') {
       setActiveModule('dashboard');
     } else {
       setActiveModule('orders');
     }
-  }, [user?.role]);
+  }, [user?.role, navigate]);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -46,10 +48,6 @@ const Index = () => {
     // Set default module based on user role
     if (activeModule === 'orders' && user.role !== 'TESTER') {
       return <OrderManagement />;
-    }
-    
-    if (activeModule === 'testing' || (activeModule === 'orders' && user.role === 'TESTER')) {
-      return <TesterDashboard />;
     }
 
     // Placeholder for other modules
