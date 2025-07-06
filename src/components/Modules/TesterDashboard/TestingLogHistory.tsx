@@ -195,7 +195,7 @@ const TestingLogHistory: React.FC<TestingLogHistoryProps> = ({ onBack }) => {
                 <Button 
                   variant="outline" 
                   className="ml-4"
-                  onClick={() => handleViewDetails(log.id)}
+                  onClick={() => handleViewDetails(log.id.toString())}
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   View Details

@@ -64,7 +64,7 @@ const TechnicalDocuments: React.FC<TechnicalDocumentsProps> = ({
         type: file.type.includes('pdf') ? 'pdf' : file.type.includes('word') ? 'doc' : 'docx',
         size: file.size,
         uploadedAt: new Date().toISOString(),
-        uploadedBy: user.id,
+        uploadedBy: user.id.toString(),
         url: mockUrl,
       };
 

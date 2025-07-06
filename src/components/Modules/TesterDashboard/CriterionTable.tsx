@@ -53,7 +53,7 @@ const CriterionTable: React.FC<CriterionTableProps> = ({
 
         <SupplementaryInfo 
           standardId={standardId} 
-          criterionId={criterion.id}
+          criterionId={criterion.id.toString()}
           supplementaryInfo={criterion.supplementaryInfo}
         />
       </div>

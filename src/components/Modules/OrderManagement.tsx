@@ -59,7 +59,7 @@ const OrderManagement: React.FC = () => {
     type: 'pdf',
     size: 2048000, // 2MB
     uploadedAt: new Date().toISOString(),
-    uploadedBy: user?.id || 'system',
+    uploadedBy: user?.id?.toString() || 'system',
     url: 'uploads/mock-sample-tech-spec.pdf',
   });
 
@@ -127,7 +127,7 @@ const OrderManagement: React.FC = () => {
       notes: newOrder.notes,
       status: 'pending',
       assignedTests: newOrder.assignedTests,
-      createdBy: user?.id || '',
+      createdBy: user?.id?.toString() || '',
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       technicalDocuments: newOrder.technicalDocuments,
@@ -167,7 +167,7 @@ const OrderManagement: React.FC = () => {
 
   const filteredOrders = orders.filter(order => 
     order.sampleName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    order.sampleId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.sampleId.toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
     order.manufacturer.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -254,17 +254,17 @@ const OrderManagement: React.FC = () => {
                       <label key={test.id} className="flex items-center space-x-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={newOrder.assignedTests.includes(test.id)}
+                          checked={newOrder.assignedTests.includes(test.id.toString())}
                           onChange={(e) => {
                             if (e.target.checked) {
                               setNewOrder(prev => ({
                                 ...prev,
-                                assignedTests: [...prev.assignedTests, test.id]
+                                assignedTests: [...prev.assignedTests, test.id.toString()]
                               }));
                             } else {
                               setNewOrder(prev => ({
                                 ...prev,
-                                assignedTests: prev.assignedTests.filter(id => id !== test.id)
+                                assignedTests: prev.assignedTests.filter(id => id !== test.id.toString())
                               }));
                             }
                           }}

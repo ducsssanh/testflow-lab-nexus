@@ -99,7 +99,7 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
               standardId={criterion.requirementId}
               criterion={criterion}
               level={0}
-              isExpanded={expandedCriteria.has(criterion.id)}
+              isExpanded={expandedCriteria.has(criterion.id.toString())}
               onToggleExpanded={toggleCriteriaExpanded}
               onUpdateTableData={updateTableData}
             />

@@ -44,7 +44,7 @@ const CriterionTableBody: React.FC<CriterionTableBodyProps> = ({
                   <InputFieldRenderer
                     column={column}
                     row={row}
-                    onUpdateValue={(value) => onUpdateTableData(standardId, criterion.id, row.id, column.id, value)}
+                    onUpdateValue={(value) => onUpdateTableData(standardId, criterion.id.toString(), row.id.toString(), column.id.toString(), value)}
                   />
                 )}
               </TableCell>

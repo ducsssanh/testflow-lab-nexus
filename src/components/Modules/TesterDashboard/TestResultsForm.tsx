@@ -50,7 +50,7 @@ const TestResultsForm: React.FC<TestResultsFormProps> = ({
             <Input
               id={`test-${test.id}`}
               value={testResults[test.id] || ''}
-              onChange={(e) => onTestResultChange(test.id, e.target.value)}
+              onChange={(e) => onTestResultChange(test.id.toString(), e.target.value)}
               placeholder={`Nhập kết quả${test.unit ? ` (${test.unit})` : ''}`}
             />
           </div>

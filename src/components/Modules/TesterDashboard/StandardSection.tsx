@@ -54,7 +54,7 @@ const RequirementSection: React.FC<RequirementSectionProps> = ({
                 standardId={section.id}
                 criterion={criterion}
                 level={0}
-                isExpanded={expandedCriteria.has(criterion.id)}
+                isExpanded={expandedCriteria.has(criterion.id.toString())}
                 onToggleExpanded={onToggleCriteriaExpanded}
                 onUpdateTableData={onUpdateTableData}
               />

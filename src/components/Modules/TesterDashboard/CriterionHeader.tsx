@@ -28,7 +28,7 @@ const CriterionHeader: React.FC<CriterionHeaderProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => onToggleExpanded(criterion.id)}
+              onClick={() => onToggleExpanded(criterion.id.toString())}
             >
               {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>

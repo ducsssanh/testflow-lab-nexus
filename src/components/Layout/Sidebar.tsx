@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeModule, onModuleChange, isColla
       );
     }
 
-    if (user?.role === 'tester') {
+    if (user?.role === 'TESTER') {
       baseItems.push(
         { id: 'testing', label: 'Kiểm định', icon: FileText },
         { id: 'equipment', label: 'Thiết bị', icon: Settings },
