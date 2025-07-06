@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
 import { TestingRequirementSection } from '@/types/lims';
-import CriterionTable from './CriterionTable';
+import CriterionTable from '../../tester/CriterionTable';
 
 interface RequirementSectionProps {
   section: TestingRequirementSection;

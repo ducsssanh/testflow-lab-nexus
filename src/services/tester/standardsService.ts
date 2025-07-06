@@ -100,12 +100,32 @@ export const fetchTestingCriteria = async (productTypeId: string, requirementIds
           section.rows.map(row => ({
             id: row.id.toString(),
             name: row.subHeader || `Criterion ${row.orderIndex}`,
+            sectionNumber: `${section.orderIndex}.${row.orderIndex}`,
             description: row.values.map(v => v.value).join(', '),
-            result: 'pending' as const,
+            result: null,
             notes: '',
             subHeader: row.subHeader,
             orderIndex: row.orderIndex,
-            values: row.values
+            values: row.values,
+            tableStructure: {
+              columns: section.columns.map(col => ({
+                id: col.id.toString(),
+                header: col.values.map(v => v.value).join(' '),
+                type: 'text' as const,
+                width: '150px'
+              })),
+              rowTemplate: {
+                modelPrefix: 'R#',
+                modelCount: section.rows.length
+              }
+            },
+            tableData: {
+              rows: [{
+                id: row.id.toString(),
+                model: `R#${row.orderIndex.toString().padStart(2, '0')}`,
+                values: {}
+              }]
+            }
           }))
         ) || []
       };

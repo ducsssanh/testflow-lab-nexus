@@ -1,6 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 // Type definitions for the LIMS system
+export interface SampleInfo {
+  manufacturer: string;
+  model: string;
+  voltage: string;
+  capacity: string;
+  temperature: string;
+}
+
 export interface User {
   id: number | string; // Unique identifier for the user
   username: string;
@@ -110,13 +118,18 @@ export interface InspectionLog {
   testingRequirements: string[];
   testSample: string;
   testingDate: string;
-  sampleInfo: Record<string, any>; // Dynamic based on sample type
+  sampleInfo: SampleInfo;
   testingCriteria: TestingCriterion[];
   requirementSections: TestingRequirementSection[]; // NEW: Organized by requirements
   status: 'Draft' | 'Completed';
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  // Additional properties for OrderInformationSection
+  orderDate?: string;
+  clientName?: string;
+  clientAddress?: string;
+  notes?: string;
 }
 
 export interface ReportTemplate {

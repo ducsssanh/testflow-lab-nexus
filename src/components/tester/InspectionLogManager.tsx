@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useEffect } from 'react';
-import { Assignment, InspectionLog } from '@/types/lims';
+import { Assignment, InspectionLog, SampleInfo } from '@/types/lims';
 
 interface UseInspectionLogReturn {
   inspectionLog: InspectionLog | null;
@@ -12,9 +12,14 @@ interface UseInspectionLogReturn {
 }
 
 // Filter function to remove manufacturer field from sample info
-const filterSampleInfo = (sampleInfo: Record<string, any>): Record<string, any> => {
-  const { manufacturer, ...filteredInfo } = sampleInfo;
-  return filteredInfo;
+const filterSampleInfo = (sampleInfo: Record<string, any>): SampleInfo => {
+  return {
+    manufacturer: sampleInfo.manufacturer || '',
+    model: sampleInfo.model || '',
+    voltage: sampleInfo.voltage || '',
+    capacity: sampleInfo.capacity || '',
+    temperature: sampleInfo.temperature || ''
+  };
 };
 
 export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn => {
@@ -63,7 +68,13 @@ export const useInspectionLog = (assignment: Assignment): UseInspectionLogReturn
         testingRequirements: assignment.testingRequirements,
         testSample: assignment.testSample,
         testingDate: new Date().toISOString().split('T')[0],
-        sampleInfo: {}, // Initialize with empty object - no manufacturer info
+        sampleInfo: {
+          manufacturer: '',
+          model: assignment.testSample || '',
+          voltage: '',
+          capacity: '',
+          temperature: ''
+        }, // Initialize with SampleInfo structure
         testingCriteria: [], // Legacy field - will be migrated to requirementSections
         requirementSections: [], // NEW: Will be populated from API based on testingRequirements
         status: 'Draft',
