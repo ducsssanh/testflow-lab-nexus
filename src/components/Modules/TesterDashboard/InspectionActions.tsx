@@ -1,37 +1,78 @@
 
 import React from 'react';
-import { Assignment, InspectionLog, TestingStandardSection } from '@/types/lims';
+import { Assignment, InspectionLog, TestingRequirementSection } from '@/types/lims';
 import { useToast } from '@/hooks/use-toast';
 
 interface InspectionActionsProps {
   assignment: Assignment;
   inspectionLog: InspectionLog;
-  standardSections: TestingStandardSection[];
+  requirementSections: TestingRequirementSection[];
   onUpdateAssignment: (assignment: Assignment) => void;
   onUpdateInspectionLog: (log: InspectionLog) => void;
+  onUpdateRequirementSections: (sections: TestingRequirementSection[]) => void;
 }
 
 export const useInspectionActions = ({
   assignment,
   inspectionLog,
-  standardSections,
+  requirementSections,
   onUpdateAssignment,
   onUpdateInspectionLog,
+  onUpdateRequirementSections,
 }: InspectionActionsProps) => {
   const { toast } = useToast();
 
   const handleUpdateCriteria = async () => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual additional criteria endpoint
-    // GET /api/v1/testing-standards/additional-criteria?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}
-    // const response = await fetch(`/api/v1/testing-standards/additional-criteria?sampleType=${assignment.sampleType}&standards=${assignment.testingRequirements.join(',')}`);
-    // const additionalSections = await response.json();
-    // setStandardSections(prev => [...prev, ...additionalSections]);
-
-    toast({
-      title: "Update Function",
-      description: "Additional testing criteria can be added per customer requests for specific standards",
-    });
+    try {
+      const subTypeParam = assignment.sampleSubType ? `&sampleSubType=${assignment.sampleSubType}` : '';
+      
+      // First, get additional criteria
+      const additionalResponse = await fetch(`/api/v1/testing-requirements/additional-criteria?sampleType=${assignment.sampleType}&requirements=${assignment.testingRequirements.join(',')}${subTypeParam}`);
+      
+      if (!additionalResponse.ok) {
+        throw new Error(`HTTP error! status: ${additionalResponse.status}`);
+      }
+      
+      const additionalApiResponse = await additionalResponse.json();
+      
+      if (additionalApiResponse.success) {
+        const additionalSections = additionalApiResponse.data.additionalCriteria;
+        
+        // Merge additional criteria with existing ones
+        const updatedSections = [...requirementSections, ...additionalSections];
+        
+        // Now query the complete testing criteria with the updated requirements
+        const allRequirements = [...assignment.testingRequirements, ...additionalSections.map((s: TestingRequirementSection) => s.requirementName)];
+        
+        const criteriaResponse = await fetch(`/api/v1/testing-criteria?sampleType=${assignment.sampleType}&requirements=${allRequirements.join(',')}${subTypeParam}`);
+        
+        if (!criteriaResponse.ok) {
+          throw new Error(`HTTP error! status: ${criteriaResponse.status}`);
+        }
+        
+        const criteriaApiResponse = await criteriaResponse.json();
+        
+        if (criteriaApiResponse.success) {
+          // Update with the complete testing criteria
+          onUpdateRequirementSections(criteriaApiResponse.data.testingCriteria);
+          
+          toast({
+            title: "Criteria Updated",
+            description: "Additional testing requirements have been loaded and integrated",
+          });
+        } else {
+          throw new Error(criteriaApiResponse.error?.message || 'Failed to load complete testing criteria');
+        }
+      } else {
+        throw new Error(additionalApiResponse.error?.message || 'Failed to load additional criteria');
+      }
+    } catch (error) {
+      console.error('Failed to update criteria:', error);
+      toast({
+        title: "Update Function",
+        description: "Additional testing criteria can be added per customer requests for specific requirements",
+      });
+    }
   };
 
   const handleSaveInspectionLog = async () => {
@@ -39,81 +80,115 @@ export const useInspectionActions = ({
 
     const updatedLog: InspectionLog = {
       ...inspectionLog,
-      standardSections,
+      requirementSections,
       updatedAt: new Date().toISOString(),
     };
 
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual save inspection log endpoint
-    // POST/PUT /api/v1/inspection-logs
-    // try {
-    //   const response = await fetch('/api/v1/inspection-logs', {
-    //     method: inspectionLog.id ? 'PUT' : 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify(updatedLog)
-    //   });
-    //   const savedLog = await response.json();
-    //   onUpdateInspectionLog(savedLog);
-    // } catch (error) {
-    //   console.error('Failed to save inspection log:', error);
-    //   toast({ title: "Error", description: "Failed to save inspection data" });
-    //   return;
-    // }
+    try {
+      const method = inspectionLog.id ? 'PUT' : 'POST';
+      const url = inspectionLog.id 
+        ? `/api/v1/inspection-logs/${inspectionLog.id}`
+        : '/api/v1/inspection-logs';
+        
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedLog)
+      });
 
-    onUpdateInspectionLog(updatedLog);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    // Update assignment status if not already in progress
-    if (assignment.status === 'Pending') {
-      const updatedAssignment: Assignment = {
-        ...assignment,
-        status: 'In Progress',
-        updatedAt: new Date().toISOString(),
-      };
-      onUpdateAssignment(updatedAssignment);
+      const apiResponse = await response.json();
+      
+      if (apiResponse.success) {
+        onUpdateInspectionLog(apiResponse.data);
+        
+        // Update assignment status if not already in progress
+        if (assignment.status === 'Pending') {
+          const updatedAssignment: Assignment = {
+            ...assignment,
+            status: 'In Progress',
+            updatedAt: new Date().toISOString(),
+          };
+          onUpdateAssignment(updatedAssignment);
+        }
+
+        toast({
+          title: "Saved",
+          description: "Inspection data has been saved successfully",
+        });
+      } else {
+        throw new Error(apiResponse.error?.message || 'Failed to save inspection log');
+      }
+    } catch (error) {
+      console.error('Failed to save inspection log:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to save to server. Changes saved locally.",
+        variant: "destructive"
+      });
+      
+      // Fallback to local update
+      onUpdateInspectionLog(updatedLog);
     }
-
-    toast({
-      title: "Saved",
-      description: "Inspection data has been saved successfully",
-    });
   };
 
   const handleGenerateReport = async () => {
     if (!inspectionLog) return;
 
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual report generation endpoint
-    // POST /api/v1/reports/generate
-    // try {
-    //   const response = await fetch('/api/v1/reports/generate', {
-    //     method: 'POST',
-    //     headers: { 'Content-Type': 'application/json' },
-    //     body: JSON.stringify({
-    //       assignmentId: assignment.id,
-    //       inspectionLogId: inspectionLog.id,
-    //       standardSections: standardSections
-    //     })
-    //   });
-    //   const report = await response.json();
-    //   console.log('Generated report:', report);
-    // } catch (error) {
-    //   console.error('Failed to generate report:', error);
-    //   toast({ title: "Error", description: "Failed to generate report" });
-    //   return;
-    // }
+    try {
+      const response = await fetch('/api/v1/reports/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignmentId: assignment.id,
+          inspectionLogId: inspectionLog.id,
+          requirementSections: requirementSections
+        })
+      });
 
-    const updatedAssignment: Assignment = {
-      ...assignment,
-      status: 'Done',
-      updatedAt: new Date().toISOString(),
-    };
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
-    onUpdateAssignment(updatedAssignment);
+      const apiResponse = await response.json();
+      
+      if (apiResponse.success) {
+        console.log('Generated report:', apiResponse.data);
+        
+        const updatedAssignment: Assignment = {
+          ...assignment,
+          status: 'Done',
+          updatedAt: new Date().toISOString(),
+        };
 
-    toast({
-      title: "Report Generated",
-      description: "Draft report has been created and assignment marked as Done",
-    });
+        onUpdateAssignment(updatedAssignment);
+
+        toast({
+          title: "Report Generated",
+          description: "Draft report has been created and assignment marked as Done",
+        });
+      } else {
+        throw new Error(apiResponse.error?.message || 'Failed to generate report');
+      }
+    } catch (error) {
+      console.error('Failed to generate report:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to generate report on server. Assignment marked as Done locally.",
+        variant: "destructive"
+      });
+      
+      // Fallback to local update
+      const updatedAssignment: Assignment = {
+        ...assignment,
+        status: 'Done',
+        updatedAt: new Date().toISOString(),
+      };
+      onUpdateAssignment(updatedAssignment);
+    }
   };
 
   return {

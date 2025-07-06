@@ -30,11 +30,22 @@ const AssignmentList: React.FC<AssignmentListProps> = ({
     }
   };
 
+  // Map team IDs to display names
+  const getTeamDisplayName = (teamId: string) => {
+    const teamMap: Record<string, string> = {
+      '101': 'Battery Testing Team',
+      '102': 'IT Equipment Team',
+      '103': 'Safety Testing Team',
+    };
+    return teamMap[teamId] || `Team ${teamId}`;
+  };
+
   const groupedByTeam = assignments.reduce((acc, assignment) => {
-    if (!acc[assignment.assignedTeam]) {
-      acc[assignment.assignedTeam] = [];
+    const teamDisplayName = getTeamDisplayName(assignment.assignedTeam);
+    if (!acc[teamDisplayName]) {
+      acc[teamDisplayName] = [];
     }
-    acc[assignment.assignedTeam].push(assignment);
+    acc[teamDisplayName].push(assignment);
     return acc;
   }, {} as Record<string, Assignment[]>);
 
@@ -48,10 +59,10 @@ const AssignmentList: React.FC<AssignmentListProps> = ({
         </Button>
       </div>
 
-      {Object.entries(groupedByTeam).map(([team, teamAssignments]) => (
-        <Card key={team}>
+      {Object.entries(groupedByTeam).map(([teamDisplayName, teamAssignments]) => (
+        <Card key={teamDisplayName}>
           <CardHeader>
-            <CardTitle className="text-lg">Team: {team}</CardTitle>
+            <CardTitle className="text-lg">Team: {teamDisplayName}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">

@@ -1,10 +1,10 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { FileText, Eye } from 'lucide-react';
 import { TechnicalDocument } from '@/types/lims';
+import { useToast } from '@/hooks/use-toast';
 
 interface TechnicalDocumentsSectionProps {
   documents: TechnicalDocument[];
@@ -15,24 +15,69 @@ const TechnicalDocumentsSection: React.FC<TechnicalDocumentsSectionProps> = ({
   documents,
   onViewDocument,
 }) => {
-  const handleViewDocument = async (document: TechnicalDocument) => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual document viewing endpoint
-    // GET /api/v1/documents/${document.id}/view
-    // This should either:
-    // 1. Return a signed URL for direct viewing
-    // 2. Stream the document content
-    // 3. Open document in a viewer component
-    
-    // const response = await fetch(`/api/v1/documents/${document.id}/view`);
-    // if (response.ok) {
-    //   const documentUrl = await response.text(); // or response.blob() for direct content
-    //   window.open(documentUrl, '_blank'); // or open in modal/viewer
-    // } else {
-    //   console.error('Failed to load document');
-    // }
+  const { toast } = useToast();
 
-    onViewDocument(document);
+  const handleViewDocument = async (document: TechnicalDocument) => {
+    const loadingToast = toast({
+      title: "Loading Document",
+      description: "Retrieving document from database...",
+    });
+
+    try {
+      const response = await fetch(`/api/v1/documents/${document.id}/view`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      const apiResponse = await response.json();
+      
+      if (apiResponse.success) {
+        const documentData = apiResponse.data;
+        
+        // For database-stored documents, expect base64 content
+        if (documentData.content && documentData.mimeType) {
+          const byteCharacters = atob(documentData.content);
+          const byteNumbers = new Array(byteCharacters.length);
+          for (let i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const blob = new Blob([byteArray], { type: documentData.mimeType });
+          const url = URL.createObjectURL(blob);
+          
+          // Open in new tab
+          window.open(url, '_blank');
+          
+          // Clean up the URL after a delay
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          
+          toast({
+            title: "Document Opened",
+            description: `${document.name} has been opened for viewing`,
+          });
+        } else {
+          // Fallback to document viewer component if no content
+          onViewDocument(document);
+          toast({
+            title: "Document Viewer",
+            description: `Opening ${document.name} in document viewer`,
+          });
+        }
+      } else {
+        throw new Error(apiResponse.error?.message || 'Failed to load document');
+      }
+    } catch (error) {
+      console.error('Failed to load document:', error);
+      toast({
+        title: "Error",
+        description: "Failed to retrieve document from database",
+        variant: "destructive"
+      });
+      
+      // Fallback to the document viewer component
+      onViewDocument(document);
+    }
   };
 
   if (!documents || documents.length === 0) {

@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
 // Type definitions for the LIMS system
 export interface User {
   id: number | string; // Unique identifier for the user
@@ -93,9 +94,15 @@ export interface TestingAttempt {
   testerId: number | string;
 }
 
+<<<<<<< HEAD
 export interface TestingStandardSection {
   id: number | string;
   standardName: string; // e.g., "QCVN101:2020"
+=======
+export interface TestingRequirementSection {
+  id: string;
+  requirementName: string; // e.g., "QCVN101:2020"
+>>>>>>> 981959642012cc71df782b81bb2d755444202bb2
   sectionTitle: string; // e.g., "Electrical Safety Tests"
   criteria: TestingCriterion[];
   isExpanded?: boolean;
@@ -105,12 +112,12 @@ export interface InspectionLog {
   id: number | string;
   assignmentId: number | string;
   sampleSymbol: string;
-  testingStandards: string[];
+  testingRequirements: string[];
   testSample: string;
   testingDate: string;
   sampleInfo: Record<string, any>; // Dynamic based on sample type
   testingCriteria: TestingCriterion[];
-  standardSections: TestingStandardSection[]; // NEW: Organized by standards
+  requirementSections: TestingRequirementSection[]; // NEW: Organized by requirements
   status: 'Draft' | 'Completed';
   createdBy: string;
   createdAt: string;

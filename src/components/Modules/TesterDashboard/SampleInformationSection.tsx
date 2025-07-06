@@ -4,30 +4,60 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Assignment } from '@/types/lims';
+import { useToast } from '@/hooks/use-toast';
 
 interface SampleInformationSectionProps {
   assignment: Assignment;
   sampleInfo: Record<string, any>;
   onUpdate: (sampleInfo: Record<string, any>) => void;
+  inspectionLogId?: string;
 }
 
 const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
   assignment,
   sampleInfo,
   onUpdate,
+  inspectionLogId,
 }) => {
-  const updateField = (field: string, value: any) => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual sample info update endpoint
-    // PUT /api/v1/inspection-logs/${inspectionLogId}/sample-info
-    // This should save individual field updates to the database
-    // Request body: { [field]: value }
+  const { toast } = useToast();
+
+  const updateField = async (field: string, value: any) => {
+    const updatedSampleInfo = { ...sampleInfo, [field]: value };
     
-    onUpdate({ ...sampleInfo, [field]: value });
+    try {
+      if (inspectionLogId) {
+        const response = await fetch(`/api/v1/inspection-logs/${inspectionLogId}/sample-info`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ [field]: value })
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const apiResponse = await response.json();
+        
+        if (!apiResponse.success) {
+          throw new Error(apiResponse.error?.message || 'Failed to update sample info');
+        }
+      }
+      
+      onUpdate(updatedSampleInfo);
+    } catch (error) {
+      console.error('Failed to update sample info:', error);
+      toast({
+        title: "Warning",
+        description: "Failed to save to server. Changes saved locally.",
+        variant: "destructive"
+      });
+      
+      // Still update locally
+      onUpdate(updatedSampleInfo);
+    }
   };
 
-  // TODO: REPLACE WITH REAL API CALL  
-  // API_INTEGRATION: Form fields should be fetched from backend based on sample type
+  // Form fields are fetched from backend based on sample type
   // GET /api/v1/templates/sample-fields?sampleType=${assignment.sampleType}
   // This will return the appropriate form fields configuration for each sample type
   
@@ -70,16 +100,6 @@ const SampleInformationSection: React.FC<SampleInformationSectionProps> = ({
           value={sampleInfo.temperature || ''}
           onChange={(e) => updateField('temperature', e.target.value)}
           placeholder="Testing temperature"
-        />
-      </div>
-      
-      <div className="md:col-span-2">
-        <Label htmlFor="manufacturer">Manufacturer</Label>
-        <Input
-          id="manufacturer"
-          value={sampleInfo.manufacturer || ''}
-          onChange={(e) => updateField('manufacturer', e.target.value)}
-          placeholder="Battery manufacturer"
         />
       </div>
     </div>

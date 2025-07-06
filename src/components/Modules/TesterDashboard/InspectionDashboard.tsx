@@ -1,12 +1,13 @@
 
-import React from 'react';
-import { Assignment } from '@/types/lims';
+import React, { useState } from 'react';
+import { Assignment, TechnicalDocument } from '@/types/lims';
 import OrderInformationSection from './OrderInformationSection';
 import SampleInformationSection from './SampleInformationSection';
 import TestingCriteriaSection from './TestingCriteriaSection';
 import TechnicalDocumentsSection from './TechnicalDocumentsSection';
 import InspectionHeader from './InspectionHeader';
-import { useStandardsData } from './StandardsDataManager';
+import DocumentViewer from '../DocumentViewer';
+import { useRequirementsData } from './StandardsDataManager';
 import { useInspectionLog } from './InspectionLogManager';
 import { useInspectionActions } from './InspectionActions';
 
@@ -21,7 +22,8 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   onBack,
   onUpdateAssignment,
 }) => {
-  const { standardSections, setStandardSections } = useStandardsData(assignment);
+  const [selectedDocument, setSelectedDocument] = useState<TechnicalDocument | null>(null);
+  const { requirementSections, setRequirementSections } = useRequirementsData(assignment);
   const { inspectionLog, setInspectionLog } = useInspectionLog(assignment);
   
   const {
@@ -31,13 +33,24 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
   } = useInspectionActions({
     assignment,
     inspectionLog: inspectionLog!,
-    standardSections,
+    requirementSections,
     onUpdateAssignment,
     onUpdateInspectionLog: setInspectionLog,
+    onUpdateRequirementSections: setRequirementSections,
   });
 
   if (!inspectionLog) {
     return <div>Loading...</div>;
+  }
+
+  // If a document is selected, show the document viewer
+  if (selectedDocument) {
+    return (
+      <DocumentViewer
+        document={selectedDocument}
+        onBack={() => setSelectedDocument(null)}
+      />
+    );
   }
 
   return (
@@ -54,7 +67,7 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
       {assignment.technicalDocumentation && (
         <TechnicalDocumentsSection
           documents={assignment.technicalDocumentation}
-          onViewDocument={(doc) => console.log('View document:', doc)}
+          onViewDocument={setSelectedDocument}
         />
       )}
 
@@ -71,10 +84,10 @@ const InspectionDashboard: React.FC<InspectionDashboardProps> = ({
         onUpdate={(sampleInfo) => setInspectionLog({ ...inspectionLog, sampleInfo })}
       />
 
-      {/* Section 3: Testing Criteria by Standards */}
+      {/* Section 3: Testing Criteria by Requirements */}
       <TestingCriteriaSection
-        standardSections={standardSections}
-        onUpdateStandardSections={setStandardSections}
+        requirementSections={requirementSections}
+        onUpdateRequirementSections={setRequirementSections}
       />
     </div>
   );

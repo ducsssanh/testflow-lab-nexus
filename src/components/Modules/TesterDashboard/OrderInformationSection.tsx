@@ -44,16 +44,16 @@ const OrderInformationSection: React.FC<OrderInformationSectionProps> = ({
           </div>
           
           <div className="md:col-span-2">
-            <Label htmlFor="testingStandards">Testing Standards</Label>
+            <Label htmlFor="testingRequirements">Testing Requirements</Label>
             <div className="flex flex-wrap gap-2 mt-2 p-3 border rounded-md bg-gray-50">
-              {inspectionLog.testingStandards.map((standard, index) => (
+              {inspectionLog.testingRequirements.map((requirement, index) => (
                 <Badge key={index} variant="secondary" className="text-sm">
-                  {standard}
+                  {requirement}
                 </Badge>
               ))}
             </div>
             <p className="text-xs text-gray-500 mt-1">
-              Each standard represents a separate testing section. Standards are pre-assigned and cannot be modified.
+              Each requirement represents a separate testing section. Requirements are pre-assigned and cannot be modified.
             </p>
           </div>
           

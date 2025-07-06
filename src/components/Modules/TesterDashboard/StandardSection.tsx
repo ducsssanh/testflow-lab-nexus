@@ -3,23 +3,23 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ChevronDown, ChevronRight, FileText } from 'lucide-react';
-import { TestingStandardSection } from '@/types/lims';
+import { TestingRequirementSection } from '@/types/lims';
 import CriterionTable from './CriterionTable';
 
-interface StandardSectionProps {
-  section: TestingStandardSection;
+interface RequirementSectionProps {
+  section: TestingRequirementSection;
   isExpanded: boolean;
   expandedCriteria: Set<string>;
-  onToggleStandardExpanded: (standardId: string) => void;
+  onToggleRequirementExpanded: (requirementId: string) => void;
   onToggleCriteriaExpanded: (criteriaId: string) => void;
-  onUpdateTableData: (standardId: string, criterionId: string, rowId: string, columnId: string, value: string) => void;
+  onUpdateTableData: (requirementId: string, criterionId: string, rowId: string, columnId: string, value: string) => void;
 }
 
-const StandardSection: React.FC<StandardSectionProps> = ({
+const RequirementSection: React.FC<RequirementSectionProps> = ({
   section,
   isExpanded,
   expandedCriteria,
-  onToggleStandardExpanded,
+  onToggleRequirementExpanded,
   onToggleCriteriaExpanded,
   onUpdateTableData,
 }) => {
@@ -27,7 +27,7 @@ const StandardSection: React.FC<StandardSectionProps> = ({
     <Card className="mb-6">
       <CardHeader 
         className="cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={() => onToggleStandardExpanded(section.id)}
+        onClick={() => onToggleRequirementExpanded(section.id)}
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -35,22 +35,19 @@ const StandardSection: React.FC<StandardSectionProps> = ({
             <FileText className="h-5 w-5 text-blue-600" />
             <div>
               <CardTitle className="text-lg text-blue-800">
-                Standard: {section.standardName}
+                Requirement: {section.requirementName}
               </CardTitle>
               <p className="text-sm text-gray-600 mt-1">
-                {section.sectionTitle} • {section.criteria.length} test criteria
+                {section.sectionTitle}
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="bg-blue-50">
-            {section.criteria.length} Tests
-          </Badge>
         </div>
       </CardHeader>
       
       {isExpanded && (
-        <CardContent>
-          <div className="space-y-6">
+        <CardContent className="bg-gray-50">
+          <div className="space-y-4">
             {section.criteria.map(criterion => (
               <CriterionTable
                 key={criterion.id}
@@ -69,4 +66,4 @@ const StandardSection: React.FC<StandardSectionProps> = ({
   );
 };
 
-export default StandardSection;
+export default RequirementSection;

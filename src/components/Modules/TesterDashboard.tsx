@@ -142,17 +142,52 @@ const TesterDashboard: React.FC = () => {
     setViewMode('inspection');
   };
 
-  const handleUpdateAssignment = (updatedAssignment: Assignment) => {
-    setAssignments(prev => prev.map(a => 
-      a.id === updatedAssignment.id ? updatedAssignment : a
-    ));
-    setSelectedAssignment(updatedAssignment);
-    
-    if (updatedAssignment.status === 'Done') {
-      toast({
-        title: "Assignment Completed",
-        description: `Assignment ${updatedAssignment.sampleCode} has been marked as Done`,
+
+  const handleUpdateAssignment = async (updatedAssignment: Assignment) => {
+    try {
+      const response = await fetch(`/api/v1/assignments/${updatedAssignment.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: updatedAssignment.status,
+          updatedAt: updatedAssignment.updatedAt
+        })
       });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const apiResponse = await response.json();
+      
+      if (apiResponse.success) {
+        setAssignments(prev => prev.map(a => 
+          a.id === apiResponse.data.id ? apiResponse.data : a
+        ));
+        setSelectedAssignment(apiResponse.data);
+        
+        if (apiResponse.data.status === 'Done') {
+          toast({
+            title: "Assignment Completed",
+            description: `Assignment ${apiResponse.data.sampleCode} has been marked as Done`,
+          });
+        }
+      } else {
+        throw new Error(apiResponse.error?.message || 'Failed to update assignment');
+      }
+    } catch (error) {
+      console.error('Failed to update assignment:', error);
+      toast({ 
+        title: "Error", 
+        description: "Failed to update assignment. Changes saved locally.",
+        variant: "destructive"
+      });
+      
+      // Fallback to local update
+      setAssignments(prev => prev.map(a => 
+        a.id === updatedAssignment.id ? updatedAssignment : a
+      ));
+      setSelectedAssignment(updatedAssignment);
     }
   };
 
