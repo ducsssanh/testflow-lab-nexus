@@ -1,16 +1,17 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Type definitions for the LIMS system
 export interface User {
-  id: string;
+  id: number | string; // Unique identifier for the user
   username: string;
   fullName: string;
-  role: 'reception' | 'tester' | 'manager';
+  role: 'reception' | 'TESTER' | 'manager';
   email: string;
   isActive: boolean;
   teams?: string[]; // Teams the user belongs to
 }
 
 export interface Assignment {
-  id: string;
+  id: number | string;
   sampleCode: string; // Unique identifier for test sample
   sampleType: 'Lithium Battery' | 'ITAV Adapter' | 'ITAV Desktop' | 'ITAV Laptop+Tablet' | 'ITAV TV';
   sampleSubType?: 'Cell' | 'Pack' | 'Cell+Pack'; // For batteries
@@ -27,7 +28,7 @@ export interface Assignment {
 }
 
 export interface TestingCriterion {
-  id: string;
+  id: number | string; // Unique identifier for the user
   name: string;
   sectionNumber: string; // e.g., "2.6.1.1/7.2.1"
   parentId?: string; // For hierarchical criteria
@@ -44,7 +45,7 @@ export interface TableStructure {
 }
 
 export interface TableColumnDefinition {
-  id: string;
+  id: number | string; // Unique identifier for the user
   header: string;
   type: 'text' | 'number' | 'select' | 'readonly' | 'date' | 'textarea';
   unit?: string;
@@ -71,7 +72,7 @@ export interface TableData {
 }
 
 export interface TableRowData {
-  id: string;
+  id: number | string; // Unique identifier for the user
   model: string; // e.g., "C#01", "P#02", etc.
   values: Record<string, string>; // Column ID -> value mapping
 }
@@ -85,15 +86,15 @@ export interface SupplementaryInfo {
 }
 
 export interface TestingAttempt {
-  id: string;
+  id: number | string; // Unique identifier for the user
   value: string;
   result: 'Pass' | 'Fail' | 'N/A';
   timestamp: string;
-  testerId: string;
+  testerId: number | string;
 }
 
 export interface TestingStandardSection {
-  id: string;
+  id: number | string;
   standardName: string; // e.g., "QCVN101:2020"
   sectionTitle: string; // e.g., "Electrical Safety Tests"
   criteria: TestingCriterion[];
@@ -101,8 +102,8 @@ export interface TestingStandardSection {
 }
 
 export interface InspectionLog {
-  id: string;
-  assignmentId: string;
+  id: number | string;
+  assignmentId: number | string;
   sampleSymbol: string;
   testingStandards: string[];
   testSample: string;
@@ -117,21 +118,21 @@ export interface InspectionLog {
 }
 
 export interface ReportTemplate {
-  id: string;
+  id: number | string;
   sampleType: string;
   testingRequirements: string[];
   sections: ReportSection[];
 }
 
 export interface ReportSection {
-  id: string;
+  id: number | string; // Unique identifier for the report section
   name: string;
   criteria: TestingCriterion[];
 }
 
 export interface Order {
-  id: string;
-  sampleId: string; // Ký hiệu mẫu - coded ID for objectivity
+  id: number | string; // Unique identifier for the order
+  sampleId: number | string; // Ký hiệu mẫu - coded ID for objectivity
   sampleName: string; // Tên mẫu
   sampleType: string; // Loại mẫu
   manufacturer: string; // Nhà sản xuất
@@ -149,7 +150,7 @@ export interface Order {
 }
 
 export interface TechnicalDocument {
-  id: string;
+  id: number | string; // Unique identifier for the technical document
   name: string;
   type: string; // 'pdf' | 'doc' | 'docx'
   size: number;
@@ -159,13 +160,13 @@ export interface TechnicalDocument {
 }
 
 export interface TestTemplate {
-  id: string;
+  id: number | string; // Unique identifier for the test template
   sampleType: string;
   availableTests: TestCriterion[];
 }
 
 export interface TestCriterion {
-  id: string;
+  id: number | string; // Unique identifier for the test criterion
   name: string;
   unit?: string;
   category: string;
@@ -173,18 +174,18 @@ export interface TestCriterion {
 }
 
 export interface TestLog {
-  id: string;
-  orderId: string;
-  testId: string;
+  id: number | string; // Unique identifier for the test log
+  orderId: number | string; // Associated order ID
+  testId: number | string; // Associated test ID
   result: string;
-  testerId: string;
+  testerId: number | string; // Unique identifier for the tester
   testerName: string;
   timestamp: string;
   notes?: string;
 }
 
 export interface Equipment {
-  id: string;
+  id: number | string; // Unique identifier for the equipment
   name: string; // Tên máy
   model: string;
   manufacturer: string; // Nhà sản xuất
@@ -197,16 +198,16 @@ export interface Equipment {
 }
 
 export interface Customer {
-  id: string;
+  id: number | string; // Unique identifier for the user
   name: string;
   discountPercentage: number;
   contactInfo: string;
-  orders: string[];
+  orders: (number | string)[];
 }
 
 export interface Report {
-  id: string;
-  orderId: string;
+  id: number | string; // Unique identifier for the user
+  orderId: number | string;
   draftContent: string;
   finalContent?: string;
   approvedBy?: string;

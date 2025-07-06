@@ -1,8 +1,8 @@
-
 import React, { useState, useEffect } from 'react';
 import { Assignment } from '@/types/lims';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { mapApiToAssignment } from '@/utils/assignmentMappers';
 import AssignmentList from './TesterDashboard/AssignmentList';
 import InspectionDashboard from './TesterDashboard/InspectionDashboard';
 import TestingLogHistory from './TesterDashboard/TestingLogHistory';
@@ -13,104 +13,129 @@ const TesterDashboard: React.FC = () => {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [selectedAssignment, setSelectedAssignment] = useState<Assignment | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>('assignments');
-  
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
   const { user } = useAuth();
   const { toast } = useToast();
 
-  // TODO: REPLACE WITH REAL API CALL
-  // API_INTEGRATION: Replace this mock data with actual API call
-  // GET /api/v1/assignments?testerId=${userId}&teams=${userTeams}
-  // This should fetch assignments assigned to the current user's teams
-  const mockAssignments: Assignment[] = [
-    {
-      id: '1',
-      sampleCode: 'LT-001',
-      sampleType: 'Lithium Battery',
-      sampleSubType: 'Cell',
-      sampleQuantity: 5,
-      testingRequirements: ['QCVN101:2020+IEC', 'QCVN101:2020'],
-      receivedTime: '2024-01-15T09:00:00Z',
-      technicalDocumentation: [
-        {
-          id: '1',
-          name: 'Battery_Specification.pdf',
-          type: 'pdf',
-          size: 1024000,
-          uploadedAt: '2024-01-15T08:00:00Z',
-          uploadedBy: 'reception1',
-          url: 'uploads/battery-spec.pdf'
-        }
-      ],
-      status: 'Pending',
-      assignedTeam: 'Battery Testing Team',
-      assignedBy: 'manager1',
-      testSample: 'Li-ion Cell Model ABC123',
-      createdAt: '2024-01-15T09:00:00Z',
-      updatedAt: '2024-01-15T09:00:00Z',
-    },
-    {
-      id: '2',
-      sampleCode: 'DT-002',
-      sampleType: 'ITAV Desktop',
-      sampleQuantity: 2,
-      testingRequirements: ['QCVN101:2020'],
-      receivedTime: '2024-01-16T10:00:00Z',
-      technicalDocumentation: [
-        {
-          id: '2',
-          name: 'Desktop_Manual.pdf',
-          type: 'pdf',
-          size: 2048000,
-          uploadedAt: '2024-01-16T09:00:00Z',
-          uploadedBy: 'reception1',
-          url: 'uploads/desktop-manual.pdf'
-        }
-      ],
-      status: 'In Progress',
-      assignedTeam: 'IT Equipment Team',
-      assignedBy: 'manager1',
-      testSample: 'Desktop Computer XYZ789',
-      createdAt: '2024-01-16T10:00:00Z',
-      updatedAt: '2024-01-16T14:00:00Z',
-    },
-    {
-      id: '3',
-      sampleCode: 'AD-003',
-      sampleType: 'ITAV Adapter',
-      sampleQuantity: 10,
-      testingRequirements: ['QCVN101:2020'],
-      receivedTime: '2024-01-17T11:00:00Z',
-      status: 'Pending',
-      assignedTeam: 'IT Equipment Team',
-      assignedBy: 'manager1',
-      testSample: 'Power Adapter 65W',
-      createdAt: '2024-01-17T11:00:00Z',
-      updatedAt: '2024-01-17T11:00:00Z',
-    },
-  ];
-
   useEffect(() => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace mock data with actual API call
-    // const fetchAssignments = async () => {
-    //   try {
-    //     const response = await fetch(`/api/v1/assignments?teams=${user.teams.join(',')}`);
-    //     const assignments = await response.json();
-    //     setAssignments(assignments);
-    //   } catch (error) {
-    //     console.error('Failed to fetch assignments:', error);
-    //     toast({ title: "Error", description: "Failed to load assignments" });
-    //   }
-    // };
-    // fetchAssignments();
+    const fetchAssignments = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
 
-    // Filter assignments by user's teams (this logic will move to backend)
-    const userTeams = user?.teams || ['Battery Testing Team', 'IT Equipment Team']; // Mock user teams
-    const filteredAssignments = mockAssignments.filter(assignment => 
-      userTeams.includes(assignment.assignedTeam)
-    );
-    setAssignments(filteredAssignments);
-  }, [user]);
+        // Debug: Log user object
+        console.log('User object:', user);
+        
+        if (!user) {
+          console.warn('No user found');
+          setIsLoading(false);
+          return;
+        }
+
+        // Lấy team IDs và xử lý consistent
+        let teamIds = user?.teams || [];
+        
+        // Logic cho development environment
+        if (teamIds.length === 0 && process.env.NODE_ENV === 'development') {
+          console.warn('DEV MODE: User has no teams. Defaulting to Team ID 1');
+          teamIds = ['1'];
+        }
+
+        if (teamIds.length === 0) {
+          console.warn('User has no teams assigned');
+          setIsLoading(false);
+          toast({
+            title: "No Teams Assigned",
+            description: "You are not assigned to any testing teams.",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        console.log('Fetching assignments for teams:', teamIds);
+
+        // Fetch assignments cho từng team
+        const fetchPromises = teamIds.map(async (teamId) => {
+          try {
+            const response = await fetch(`/api/assignments/by-team/${teamId}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('limsToken')}`,
+              },
+            });
+
+            console.log(`Team ${teamId} response status:`, response.status);
+            
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            const data = await response.json();
+            console.log(`Team ${teamId} data:`, data);
+            
+            return data;
+          } catch (error) {
+            console.error(`Failed to fetch assignments for team ${teamId}:`, error);
+            throw error;
+          }
+        });
+
+        const results = await Promise.all(fetchPromises);
+        console.log('All API results:', results);
+
+        // Xử lý kết quả - cần flexible với cấu trúc response
+        const allAssignments = results
+          .flatMap(result => {
+            // Xử lý linh hoạt cấu trúc response
+            if (Array.isArray(result)) {
+              return result;
+            } else if (result.assignments && Array.isArray(result.assignments)) {
+              return result.assignments;
+            } else if (result.data && Array.isArray(result.data)) {
+              return result.data;
+            } else {
+              console.warn('Unexpected response structure:', result);
+              return [];
+            }
+          })
+          .map(assignment => {
+            try {
+              return mapApiToAssignment(assignment);
+            } catch (error) {
+              console.error('Failed to map assignment:', assignment, error);
+              return null;
+            }
+          })
+          .filter(assignment => assignment !== null) as Assignment[];
+
+        console.log('Processed assignments:', allAssignments);
+        setAssignments(allAssignments);
+
+        if (allAssignments.length === 0) {
+          toast({
+            title: "No Assignments",
+            description: "No assignments found for your teams.",
+          });
+        }
+
+      } catch (error) {
+        console.error('Failed to fetch assignments:', error);
+        setError(error instanceof Error ? error.message : 'Unknown error');
+        toast({
+          title: "Error",
+          description: "Failed to load assignments from the server.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchAssignments();
+  }, [user, toast]);
 
   const handleSelectAssignment = (assignment: Assignment) => {
     setSelectedAssignment(assignment);
@@ -118,21 +143,6 @@ const TesterDashboard: React.FC = () => {
   };
 
   const handleUpdateAssignment = (updatedAssignment: Assignment) => {
-    // TODO: REPLACE WITH REAL API CALL
-    // API_INTEGRATION: Replace with actual API call to update assignment
-    // PUT /api/v1/assignments/${assignmentId}
-    // const updateAssignment = async (assignment) => {
-    //   try {
-    //     await fetch(`/api/v1/assignments/${assignment.id}`, {
-    //       method: 'PUT',
-    //       headers: { 'Content-Type': 'application/json' },
-    //       body: JSON.stringify(assignment)
-    //     });
-    //   } catch (error) {
-    //     console.error('Failed to update assignment:', error);
-    //   }
-    // };
-
     setAssignments(prev => prev.map(a => 
       a.id === updatedAssignment.id ? updatedAssignment : a
     ));
@@ -158,6 +168,27 @@ const TesterDashboard: React.FC = () => {
   const handleBackFromHistory = () => {
     setViewMode('assignments');
   };
+
+  // Hiển thị error state
+  if (error) {
+    return (
+      <div className="p-4 text-center">
+        <div className="text-red-600 mb-2">Error loading assignments</div>
+        <div className="text-sm text-gray-600">{error}</div>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Retry
+        </button>
+      </div>
+    );
+  }
+
+  // Hiển thị loading state
+  if (isLoading) {
+    return <div className="p-4 text-center">Loading assignments...</div>;
+  }
 
   if (viewMode === 'history') {
     return <TestingLogHistory onBack={handleBackFromHistory} />;

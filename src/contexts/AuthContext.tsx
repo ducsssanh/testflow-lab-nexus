@@ -37,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: '2',
       username: 'tester1',
       fullName: 'Trần Văn Nam',
-      role: 'tester',
+      role: 'TESTER',
       email: 'tester@lab.com',
       isActive: true,
     },
@@ -61,26 +61,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (username: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    try {
-      // API_INTEGRATION: Call POST /api/v1/auth/login with body: { username, password }
-      // API_INTEGRATION: Expects response: { success: boolean, user: User, token: string }
-      
-      // Mock authentication - replace with actual API call
-      const mockUser = mockUsers.find(u => u.username === username);
-      if (mockUser && password === 'password123') {
-        setUser(mockUser);
-        localStorage.setItem('limsUser', JSON.stringify(mockUser));
-        return true;
-      }
-      return false;
-    } catch (error) {
-      console.error('Login error:', error);
-      return false;
-    } finally {
-      setIsLoading(false);
+  setIsLoading(true);
+  try {
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        email: username, // API expects email field
+        password: password
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-  };
+
+    const result = await response.json();
+    console.log("Token received:", result.data.token);
+    // Check if login was successful
+    if (result.status === 'success' && result.data) {
+      const { token, user } = result.data;
+      
+      // Store user data and token
+      setUser(user);
+      localStorage.setItem('limsUser', JSON.stringify(user));
+      localStorage.setItem('limsToken', token);
+      
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error('Login error:', error);
+    return false;
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const logout = () => {
     // API_INTEGRATION: Call POST /api/v1/auth/logout

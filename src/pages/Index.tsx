@@ -14,7 +14,7 @@ const Index = () => {
 
   // Move useEffect before any conditional returns to fix hook order violation
   useEffect(() => {
-    if (user?.role === 'tester') {
+    if (user?.role === 'TESTER') {
       setActiveModule('testing');
     } else if (user?.role === 'manager') {
       setActiveModule('dashboard');
@@ -44,11 +44,11 @@ const Index = () => {
 
   const renderModule = () => {
     // Set default module based on user role
-    if (activeModule === 'orders' && user.role !== 'tester') {
+    if (activeModule === 'orders' && user.role !== 'TESTER') {
       return <OrderManagement />;
     }
     
-    if (activeModule === 'testing' || (activeModule === 'orders' && user.role === 'tester')) {
+    if (activeModule === 'testing' || (activeModule === 'orders' && user.role === 'TESTER')) {
       return <TesterDashboard />;
     }
 
