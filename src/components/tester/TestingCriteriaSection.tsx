@@ -83,6 +83,10 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
     }))
   );
 
+  // Debug logs
+  console.log('RequirementSections in render:', requirementSections);
+  console.log('AllCriteria in render:', allCriteria);
+
   return (
     <Card>
       <CardHeader>
@@ -110,6 +114,9 @@ const TestingCriteriaSection: React.FC<TestingCriteriaSectionProps> = ({
               <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>No testing criteria loaded yet.</p>
               <p className="text-sm">Criteria will be loaded based on assignment and sample type.</p>
+              <p className="text-xs mt-2 text-blue-600">
+                Requirements found: {requirementSections.length} sections
+              </p>
             </div>
           )}
         </div>

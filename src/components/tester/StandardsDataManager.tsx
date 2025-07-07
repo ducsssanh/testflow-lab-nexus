@@ -33,134 +33,107 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
     return mapping[requirement] || 1;
   };
 
-  // Helper function to map API response to TestingRequirementSection structure
-  const mapApiResponseToRequirementSections = (templates: any[]): TestingRequirementSection[] => {
-    return templates.map((template, index) => ({
-      id: template.id.toString(),
-      requirementName: template.code,
-      sectionTitle: template.description || template.name,
-      criteria: mapSectionsToTestingCriteria(template.sections)
-    }));
-  };
-
-  // Helper function to map API sections to TestingCriterion structure
-  const mapSectionsToTestingCriteria = (sections: any[]): TestingCriterion[] => {
-    return sections.map(section => ({
-      id: section.id.toString(),
-      name: `Section ${section.orderIndex}`,
-      sectionNumber: `${section.level}.${section.orderIndex}`,
-      tableStructure: {
-        columns: mapColumnsToTableColumnDefinition(section.columns),
-        rowTemplate: {
-          modelPrefix: 'S#',
-          modelCount: section.rows.length || 1
-        }
-      },
-      tableData: {
-        rows: section.rows.map((row: any, index: number) => ({
-          id: row.id.toString(),
-          model: `S#${(index + 1).toString().padStart(2, '0')}`,
-          values: mapRowValuesToRecord(row.values, section.columns)
-        }))
-      },
-      result: section.passed,
-      supplementaryInfo: {
-        notes: section.supplementaryInfo ? [section.supplementaryInfo] : [],
-        testingTime: '',
-        tester: '',
-        equipment: ''
-      }
-    }));
-  };
-
-  // Helper function to map API columns to TableColumnDefinition
-  const mapColumnsToTableColumnDefinition = (columns: any[]): TableColumnDefinition[] => {
-    const baseColumns: TableColumnDefinition[] = [
-      { 
-        id: 'model', 
-        header: 'Model', 
-        type: 'readonly' as const
-      }
-    ];
-
-    const dataColumns = columns.map((col, index) => ({
-      id: `col_${col.id}`,
-      header: `Column ${col.orderIndex || index + 1}`,
-      type: 'text' as const,
-      placeholder: 'Enter value'
-    }));
-
-    return [...baseColumns, ...dataColumns];
-  };
-
-  // Helper function to map row values to Record format
-  const mapRowValuesToRecord = (values: any[], columns: any[]): Record<string, string> => {
-    const result: Record<string, string> = {};
-    
-    values.forEach((val, index) => {
-      const columnId = `col_${columns[index]?.id || index}`;
-      result[columnId] = val.value || '';
-    });
-    
-    return result;
-  };
-
-  const generateTableData = (criterion: TestingCriterion): TableData => {
-    const { rowTemplate } = criterion.tableStructure;
-    const rows: TableRowData[] = [];
-
-    if (rowTemplate.customModels) {
-      // Use custom model names
-      rowTemplate.customModels.forEach((model, index) => {
-        rows.push({
-          id: `row-${index + 1}`,
-          model: model,
-          values: {}
-        });
-      });
-    } else {
-      // Use prefix pattern
-      for (let i = 1; i <= rowTemplate.modelCount; i++) {
-        const modelNumber = i.toString().padStart(2, '0');
-        rows.push({
-          id: `row-${i}`,
-          model: `${rowTemplate.modelPrefix}${modelNumber}`,
-          values: {}
-        });
-      }
-    }
-
-    return { rows };
-  };
-
   const loadRequirementsData = async () => {
     try {
-      // Gọi API thật để lấy testing criteria templates
-      // Sử dụng sampleType làm productTypeId và testingRequirements[0] làm requirementId
-      const productTypeId = getProductTypeId(assignment.sampleType);
-      const requirementId = getRequirementId(assignment.testingRequirements[0]);
+      console.log('Loading requirements data for assignment:', assignment);
       
-      const response = await fetch(`/api/templates/by-product-type-and-requirement?productTypeId=${productTypeId}&requirementId=${requirementId}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('limsToken')}`,
-        },
+      // Gọi API thật để lấy testing criteria templates
+      const productTypeId = getProductTypeId(assignment.sampleType);
+      const requirementIds = assignment.testingRequirements.map(req => getRequirementId(req));
+      
+      console.log('API params:', { productTypeId, requirementIds, sampleType: assignment.sampleType });
+      
+      // Fetch data cho từng requirement
+      const fetchPromises = requirementIds.map(async (requirementId) => {
+        const url = `/api/templates/by-product-type-and-requirement?productTypeId=${productTypeId}&requirementId=${requirementId}`;
+        console.log('Fetching from URL:', url);
+        
+        const response = await fetch(url, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('limsToken')}`,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const apiResponse = await response.json();
+        console.log('API response for requirement', requirementId, ':', apiResponse);
+        
+        return { requirementId, apiResponse };
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const apiResponse = await response.json();
+      const results = await Promise.all(fetchPromises);
       
-      if (apiResponse.status === 'success') {
-        // Map API response structure sang TestingRequirementSection structure
-        const mappedSections = mapApiResponseToRequirementSections(apiResponse.data.templates);
-        setRequirementSections(mappedSections);
-      } else {
-        throw new Error('API response status not success');
-      }
+      // Process all results
+      const allSections: TestingRequirementSection[] = [];
+      
+      results.forEach(({ requirementId, apiResponse }) => {
+        if (apiResponse.status === 'success' && apiResponse.data.templates) {
+          apiResponse.data.templates.forEach((template: any) => {
+            const section: TestingRequirementSection = {
+              id: `${requirementId}-${template.id}`,
+              requirementName: template.name || template.code,
+              sectionTitle: template.description || template.name,
+              criteria: template.sections?.map((section: any) => ({
+                id: section.id.toString(),
+                name: section.name,
+                sectionNumber: `${section.level}.${section.orderIndex}`,
+                result: section.passed === true ? 'Pass' as const : section.passed === false ? 'Fail' as const : null,
+                tableStructure: {
+                  columns: [
+                    {
+                      id: 'model',
+                      header: 'Model',
+                      type: 'readonly' as const,
+                      width: '120px'
+                    },
+                    ...section.values.map((value: any, index: number) => ({
+                      id: value.id.toString(),
+                      header: value.value,
+                      type: 'text' as const,
+                      width: '150px'
+                    }))
+                  ],
+                  rowTemplate: {
+                    modelPrefix: 'R#',
+                    modelCount: section.rows?.length || 1
+                  }
+                },
+                tableData: {
+                  rows: section.rows?.length > 0 ? section.rows.map((row: any) => ({
+                    id: row.id.toString(),
+                    model: `R#${row.orderIndex.toString().padStart(2, '0')}`,
+                    values: row.values.reduce((acc: Record<string, string>, val: any) => {
+                      acc[val.id.toString()] = val.value;
+                      return acc;
+                    }, {})
+                  })) : [{
+                    id: section.id.toString(),
+                    model: 'R#01',
+                    values: {}
+                  }]
+                },
+                supplementaryInfo: section.supplementaryInfo ? {
+                  notes: [section.supplementaryInfo],
+                  defaultNotes: [],
+                  testingTime: '',
+                  tester: '',
+                  equipment: ''
+                } : undefined
+              })) || []
+            };
+            allSections.push(section);
+          });
+        }
+      });
+      
+      console.log('Final processed sections:', allSections);
+      setRequirementSections(allSections);
+      
     } catch (error) {
       console.error('Failed to load testing criteria:', error);
       setRequirementSections([]);
