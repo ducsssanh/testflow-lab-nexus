@@ -115,7 +115,7 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
                 return {
                   id: section.id.toString(),
                   name: section.name,
-                  sectionNumber: `${section.level}.${section.orderIndex}.1/${section.level}.${section.orderIndex + 1}.1`, // HARDCODED: API không có trường này
+                  sectionNumber: `${section.level}.${section.orderIndex}.1/${section.level + 1}.${section.orderIndex}.1`, // HARDCODED: Updated format to match image
                   result: section.passed === true ? 'Pass' as const : section.passed === false ? 'Fail' as const : null,
                   tableStructure: {
                     columns: columns,
