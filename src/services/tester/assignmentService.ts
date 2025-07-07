@@ -20,9 +20,9 @@ export const fetchTesterAssignments = async (user: User): Promise<Assignment[]> 
   // Map team names from API response to team IDs
   const mapTeamNameToId = (teamName: string): string => {
     const teamMapping: Record<string, string> = {
-      'TEAM A': '1',
-      'TEAM B': '2', 
-      'TEAM C': '3',
+      'Team A': '1',
+      'Team B': '2', 
+      'Team C': '3',
     };
     return teamMapping[teamName] || teamName;
   };
