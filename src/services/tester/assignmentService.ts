@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Assignment } from '@/types/lims';
 import { User } from '@/types/lims';
 import { mapApiToAssignment } from '@/utils/assignmentMappers';

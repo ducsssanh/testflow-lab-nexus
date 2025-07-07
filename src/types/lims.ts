@@ -84,7 +84,8 @@ export interface TableData {
 export interface TableRowData {
   id: number | string; // Unique identifier for the user
   model: string; // e.g., "C#01", "P#02", etc.
-  values: Record<string, string>; // Column ID -> value mapping
+  values: Record<string, string>; // Column ID -> value mapping\
+  isSubheader?: boolean;
 }
 
 export interface SupplementaryInfo {
