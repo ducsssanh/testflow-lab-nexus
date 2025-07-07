@@ -74,7 +74,7 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
         results.forEach(({ requirementId, apiResponse }) => {
         if (apiResponse.status === 'success' && apiResponse.data.templates) {
           apiResponse.data.templates.forEach((template: any) => {
-            const section: TestingRequirementSection = {
+              const section: TestingRequirementSection = {
               id: `${requirementId}-${template.id}`,
               requirementName: template.name || template.code,
               sectionTitle: template.description || template.name,
@@ -91,17 +91,18 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
                   width: val.value === 'Model' ? '120px' : '150px'
                 })) || [];
                 
-                // Build table data from data rows
+                // Build table data from data rows - keep all values including model in values object
                 const tableRows = dataRows.map((row: any) => {
                   const rowValues: Record<string, string> = {};
                   let model = '';
                   
                   row.values?.forEach((val: any) => {
                     const columnId = val.collumnId.toString();
+                    // Put all values in the values object
+                    rowValues[columnId] = val.value;
+                    // Also extract model for the model field
                     if (columns.find(col => col.id === columnId && col.header === 'Model')) {
                       model = val.value;
-                    } else {
-                      rowValues[columnId] = val.value;
                     }
                   });
                   
@@ -115,7 +116,7 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
                 return {
                   id: section.id.toString(),
                   name: section.name,
-                  sectionNumber: `${section.level}.${section.orderIndex}.1/${section.level + 1}.${section.orderIndex}.1`, // HARDCODED: Updated format to match image
+                  sectionNumber: `${section.level}.${section.orderIndex}.1/${section.level + 1}.${section.orderIndex}.1`,
                   result: section.passed === true ? 'Pass' as const : section.passed === false ? 'Fail' as const : null,
                   tableStructure: {
                     columns: columns,
@@ -128,11 +129,11 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
                     rows: tableRows
                   },
                   supplementaryInfo: {
-                    notes: ['No fire, no explosion, no leakage'], // HARDCODED: API không có trường này
+                    notes: ['No fire, no explosion, no leakage'],
                     defaultNotes: [],
-                    testingTime: '', // HARDCODED: API không có trường này
-                    tester: '', // HARDCODED: API không có trường này  
-                    equipment: 'PSI.TB-' // HARDCODED: API không có trường này
+                    testingTime: '',
+                    tester: '',
+                    equipment: 'PSI.TB-'
                   }
                 };
               }) || []
