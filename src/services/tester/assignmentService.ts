@@ -17,14 +17,18 @@ export const fetchTesterAssignments = async (user: User): Promise<Assignment[]> 
     return [];
   }
 
-  // Get team IDs and handle consistently
-  let teamIds = user?.teams || [];
-  
-  // Logic for development environment
-  if (teamIds.length === 0 && process.env.NODE_ENV === 'development') {
-    console.warn('DEV MODE: User has no teams. Defaulting to Team ID 1');
-    teamIds = ['1'];
-  }
+  // Map team names from API response to team IDs
+  const mapTeamNameToId = (teamName: string): string => {
+    const teamMapping: Record<string, string> = {
+      'TEAM A': '101',
+      'TEAM B': '102', 
+      'TEAM C': '103',
+    };
+    return teamMapping[teamName] || teamName;
+  };
+
+  // Get team IDs from user teams and map them
+  let teamIds = (user?.teams || []).map(team => mapTeamNameToId(team));
 
   if (teamIds.length === 0) {
     console.warn('User has no teams assigned');
