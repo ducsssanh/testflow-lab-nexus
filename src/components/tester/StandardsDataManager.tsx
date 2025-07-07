@@ -71,60 +71,71 @@ export const useRequirementsData = (assignment: Assignment): UseRequirementsData
       // Process all results
       const allSections: TestingRequirementSection[] = [];
       
-      results.forEach(({ requirementId, apiResponse }) => {
+        results.forEach(({ requirementId, apiResponse }) => {
         if (apiResponse.status === 'success' && apiResponse.data.templates) {
           apiResponse.data.templates.forEach((template: any) => {
             const section: TestingRequirementSection = {
               id: `${requirementId}-${template.id}`,
               requirementName: template.name || template.code,
               sectionTitle: template.description || template.name,
-              criteria: template.sections?.map((section: any) => ({
-                id: section.id.toString(),
-                name: section.name,
-                sectionNumber: `${section.level}.${section.orderIndex}`,
-                result: section.passed === true ? 'Pass' as const : section.passed === false ? 'Fail' as const : null,
-                tableStructure: {
-                  columns: [
-                    {
-                      id: 'model',
-                      header: 'Model',
-                      type: 'readonly' as const,
-                      width: '120px'
-                    },
-                    ...section.values.map((value: any, index: number) => ({
-                      id: value.id.toString(),
-                      header: value.value,
-                      type: 'text' as const,
-                      width: '150px'
-                    }))
-                  ],
-                  rowTemplate: {
-                    modelPrefix: 'R#',
-                    modelCount: section.rows?.length || 1
-                  }
-                },
-                tableData: {
-                  rows: section.rows?.length > 0 ? section.rows.map((row: any) => ({
+              criteria: template.sections?.map((section: any) => {
+                // Parse rows structure - first row contains headers, subsequent rows contain data
+                const headerRow = section.rows?.find((row: any) => row.orderIndex === 1);
+                const dataRows = section.rows?.filter((row: any) => row.orderIndex > 1) || [];
+                
+                // Build columns from header row values
+                const columns = headerRow?.values?.map((val: any) => ({
+                  id: val.collumnId.toString(),
+                  header: val.value,
+                  type: val.value === 'Model' ? 'readonly' as const : 'text' as const,
+                  width: val.value === 'Model' ? '120px' : '150px'
+                })) || [];
+                
+                // Build table data from data rows
+                const tableRows = dataRows.map((row: any) => {
+                  const rowValues: Record<string, string> = {};
+                  let model = '';
+                  
+                  row.values?.forEach((val: any) => {
+                    const columnId = val.collumnId.toString();
+                    if (columns.find(col => col.id === columnId && col.header === 'Model')) {
+                      model = val.value;
+                    } else {
+                      rowValues[columnId] = val.value;
+                    }
+                  });
+                  
+                  return {
                     id: row.id.toString(),
-                    model: `R#${row.orderIndex.toString().padStart(2, '0')}`,
-                    values: row.values.reduce((acc: Record<string, string>, val: any) => {
-                      acc[val.id.toString()] = val.value;
-                      return acc;
-                    }, {})
-                  })) : [{
-                    id: section.id.toString(),
-                    model: 'R#01',
-                    values: {}
-                  }]
-                },
-                supplementaryInfo: section.supplementaryInfo ? {
-                  notes: [section.supplementaryInfo],
-                  defaultNotes: [],
-                  testingTime: '',
-                  tester: '',
-                  equipment: ''
-                } : undefined
-              })) || []
+                    model: model,
+                    values: rowValues
+                  };
+                });
+
+                return {
+                  id: section.id.toString(),
+                  name: section.name,
+                  sectionNumber: `${section.level}.${section.orderIndex}.1/${section.level}.${section.orderIndex + 1}.1`, // HARDCODED: API không có trường này
+                  result: section.passed === true ? 'Pass' as const : section.passed === false ? 'Fail' as const : null,
+                  tableStructure: {
+                    columns: columns,
+                    rowTemplate: {
+                      modelPrefix: 'C#',
+                      modelCount: dataRows.length || 1
+                    }
+                  },
+                  tableData: {
+                    rows: tableRows
+                  },
+                  supplementaryInfo: {
+                    notes: ['No fire, no explosion, no leakage'], // HARDCODED: API không có trường này
+                    defaultNotes: [],
+                    testingTime: '', // HARDCODED: API không có trường này
+                    tester: '', // HARDCODED: API không có trường này  
+                    equipment: 'PSI.TB-' // HARDCODED: API không có trường này
+                  }
+                };
+              }) || []
             };
             allSections.push(section);
           });
