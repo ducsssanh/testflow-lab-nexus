@@ -77,6 +77,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // API_INTEGRATION: Call POST /api/v1/auth/logout
     setUser(null);
     localStorage.removeItem('limsUser');
+    localStorage.removeItem('limsToken');
+    // Redirect to login page
+    window.location.href = '/';
   };
 
   return (

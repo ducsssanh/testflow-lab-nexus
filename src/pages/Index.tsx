@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import LoginForm from '@/components/shared/Auth/LoginForm';
 import Header from '@/components/shared/Layout/Header';
 import Sidebar from '@/components/shared/Layout/Sidebar';
 import OrderManagement from '@/pages/manager/OrderManagement';
@@ -15,6 +14,11 @@ const Index = () => {
 
   // Move useEffect before any conditional returns to fix hook order violation
   useEffect(() => {
+    if (!user && !isLoading) {
+      navigate('/');
+      return;
+    }
+    
     if (user?.role === 'TESTER') {
       navigate('/tester/dashboard');
       return;
@@ -23,7 +27,7 @@ const Index = () => {
     } else {
       setActiveModule('orders');
     }
-  }, [user?.role, navigate]);
+  }, [user, isLoading, navigate]);
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -41,7 +45,7 @@ const Index = () => {
   }
 
   if (!user) {
-    return <LoginForm />;
+    return null; // Will redirect to login via useEffect
   }
 
   const renderModule = () => {

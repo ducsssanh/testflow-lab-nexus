@@ -9,6 +9,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import TesterDashboard from "./pages/tester/TesterDashboard";
 import TesterInspection from "./pages/tester/TesterInspection";
+import LoginForm from "./components/shared/Auth/LoginForm";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +21,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<LoginForm />} />
+            <Route path="/dashboard" element={<Index />} />
             <Route path="/tester/dashboard" element={<TesterDashboard />} />
             <Route path="/tester/inspection/:id" element={<TesterInspection />} />
             <Route path="*" element={<NotFound />} />
