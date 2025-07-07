@@ -27,15 +27,18 @@ export const fetchTesterAssignments = async (user: User): Promise<Assignment[]> 
     return teamMapping[teamName] || teamName;
   };
 
-  // Get team IDs from user teams and map them
+  // Get team IDs from user team and map them
   let teamIds: string[] = [];
   
-  if (user?.teams && user.teams.length > 0) {
-    // If user has teams in response, map them
+  if (user?.team) {
+    // Handle singular team field from API response
+    teamIds = [mapTeamNameToId(user.team)];
+  } else if (user?.teams && user.teams.length > 0) {
+    // Handle legacy teams array if still present
     teamIds = user.teams.map(team => mapTeamNameToId(team));
   } else if (user?.role === 'TESTER') {
-    // Default fallback for testers when teams field is missing from API
-    console.warn('No teams field in user data, defaulting to Team 1 for tester');
+    // Default fallback for testers when team field is missing from API
+    console.warn('No team field in user data, defaulting to Team 1 for tester');
     teamIds = ['1'];
   }
 

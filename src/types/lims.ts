@@ -16,7 +16,8 @@ export interface User {
   role: 'reception' | 'TESTER' | 'manager';
   email: string;
   isActive: boolean;
-  teams?: string[]; // Teams the user belongs to
+  team?: string; // Team the user belongs to (singular)
+  teams?: string[]; // Teams the user belongs to (legacy array format)
 }
 
 export interface Assignment {
