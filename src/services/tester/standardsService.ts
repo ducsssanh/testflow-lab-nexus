@@ -16,12 +16,14 @@ interface ApiTemplate {
   }>;
   sections: Array<{
     id: number;
+    name: string;
     templateId: number;
     parentId: number | null;
     level: number;
     orderIndex: number;
     passed: boolean | null;
     supplementaryInfo: string | null;
+    isActive: boolean;
     rows: Array<{
       id: number;
       subHeader: string | null;
@@ -29,9 +31,10 @@ interface ApiTemplate {
       values: Array<{
         id: number;
         value: string;
+        collumnId?: number;
       }>;
     }>;
-    columns: Array<{
+    columns?: Array<{
       id: number;
       orderIndex: number;
       values: Array<{
@@ -96,38 +99,53 @@ export const fetchTestingCriteria = async (productTypeId: string, requirementIds
         id: requirementId,
         requirementName: template?.name || `Requirement ${requirementId}`,
         sectionTitle: template?.description || template?.name || `Section ${requirementId}`,
-        criteria: template?.sections?.flatMap(section => 
-          section.rows.map(row => ({
-            id: row.id.toString(),
-            name: row.subHeader || `Criterion ${row.orderIndex}`,
-            sectionNumber: `${section.orderIndex}.${row.orderIndex}`,
-            description: row.values.map(v => v.value).join(', '),
-            result: null,
-            notes: '',
-            subHeader: row.subHeader,
-            orderIndex: row.orderIndex,
-            values: row.values,
-            tableStructure: {
-              columns: section.columns.map(col => ({
-                id: col.id.toString(),
-                header: col.values.map(v => v.value).join(' '),
+        criteria: template?.sections?.map(section => ({
+          id: section.id.toString(),
+          name: section.name,
+          sectionNumber: `${section.level}.${section.orderIndex}`,
+          result: section.passed === true ? 'Pass' as const : section.passed === false ? 'Fail' as const : null,
+          supplementaryInfo: section.supplementaryInfo ? {
+            notes: [section.supplementaryInfo],
+            defaultNotes: [],
+            testingTime: '',
+            tester: '',
+            equipment: ''
+          } : undefined,
+          tableStructure: {
+            columns: [
+              {
+                id: 'model',
+                header: 'Model',
+                type: 'readonly' as const,
+                width: '120px'
+              },
+              ...section.values.map((value, index) => ({
+                id: value.id.toString(),
+                header: value.value,
                 type: 'text' as const,
                 width: '150px'
-              })),
-              rowTemplate: {
-                modelPrefix: 'R#',
-                modelCount: section.rows.length
-              }
-            },
-            tableData: {
-              rows: [{
-                id: row.id.toString(),
-                model: `R#${row.orderIndex.toString().padStart(2, '0')}`,
-                values: {}
-              }]
+              }))
+            ],
+            rowTemplate: {
+              modelPrefix: 'R#',
+              modelCount: section.rows.length || 1
             }
-          }))
-        ) || []
+          },
+          tableData: {
+            rows: section.rows.length > 0 ? section.rows.map(row => ({
+              id: row.id.toString(),
+              model: `R#${row.orderIndex.toString().padStart(2, '0')}`,
+              values: row.values.reduce((acc, val) => {
+                acc[val.collumnId?.toString() || val.id.toString()] = val.value;
+                return acc;
+              }, {} as Record<string, string>)
+            })) : [{
+              id: section.id.toString(),
+              model: 'R#01',
+              values: {}
+            }]
+          }
+        })) || []
       };
     });
 
